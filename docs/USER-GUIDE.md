@@ -48,7 +48,10 @@ Every entry is saved immediately, with its time and one GPS position. The count 
 ## Moving data and backups
 
 - **Setup → Save backup file** saves everything (including voice notes and photos) as one file. On a phone, the share sheet opens: use AirDrop, Files or email.
-- **Setup → Import / merge a file** on another device merges that file in. If the same sighting was edited on both devices, both versions are kept; you choose which one to keep under **Edited on two devices**.
+- **Setup → Import / merge a file** on another device merges that file in. If the same sighting, birding session or trip was changed on both devices (including deleted on one and edited on the other), both versions are kept; you choose which one to keep under **Edited on two devices**. Choosing **Use other** changes the content only: a checklist you already exported stays marked as exported and warns you that it has changed since.
+- Clashes you haven't settled yet are saved in your backup file too, so they survive moving to a new phone.
+- A damaged or edited file is refused with a message saying what is wrong, and nothing from it is stored.
+- If a change can't be saved (for example, the device is full), a notice at the top of the screen says so. Save a backup and free up space before carrying on.
 - The Today screen reminds you after every 25 entries since your last backup.
 
 ## Good to know

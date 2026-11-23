@@ -27,7 +27,7 @@ Requires Node 20 or later.
 npm install
 ```
 
-Run the tests: 32 core and end-to-end tests.
+Run the tests: unit, storage and end-to-end tests, plus property tests that merge hundreds of random two-phone edit histories.
 
 ```bash
 npm test
