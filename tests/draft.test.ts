@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDraft } from '../src/ui/draft';
+import { describeFailure } from '../src/ui/FailureBanner';
 
 describe('text field drafts', () => {
   it('saves typed text once, then nothing until it changes again', () => {
@@ -37,5 +38,18 @@ describe('text field drafts', () => {
     expect(d.take()).toBe('nz');
     d.sync('NZ');
     expect(d.value).toBe('NZ');
+  });
+});
+
+describe('failed-write messages', () => {
+  it('says plainly that a full device did not save the change', () => {
+    expect(describeFailure({ name: 'QuotaExceededError', message: 'x' })).toMatch(/out of storage space.*NOT saved/);
+    expect(describeFailure({ name: 'DatabaseClosedError', inner: { name: 'QuotaExceededError' } })).toMatch(/out of storage space/);
+  });
+  it('stays quiet when the user cancels a share sheet', () => {
+    expect(describeFailure({ name: 'AbortError' })).toBeUndefined();
+  });
+  it('passes on any other error', () => {
+    expect(describeFailure(new Error('disk on fire'))).toMatch(/may not have been saved: disk on fire/);
   });
 });

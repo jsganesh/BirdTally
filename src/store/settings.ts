@@ -58,8 +58,10 @@ export function getPosition(timeoutMs = 15000): Promise<{ pos?: GeoPoint; status
 export async function createTrip(name: string, countryCodes: string[]): Promise<Trip> {
   const st = await getSettings();
   const t: Trip = { ...newMeta(st.deviceId), name, countryCodes };
-  await db.trips.put(t);
-  await db.settings.update('main', { activeTripId: t.id });
+  await db.transaction('rw', db.trips, db.settings, async () => {
+    await db.trips.put(t);
+    await db.settings.update('main', { activeTripId: t.id });
+  });
   return t;
 }
 

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { db } from './db';
 import { Checklists } from './ui/Checklists';
+import { FailureBanner } from './ui/FailureBanner';
 import { TaxonomyProvider, useOnline, useSettings } from './ui/hooks';
 import { Notebook } from './ui/Notebook';
 import { Setup } from './ui/Setup';
@@ -53,6 +54,7 @@ export function App() {
             {online ? 'Online' : 'Offline — saving on device'}
           </span>
         </header>
+        <FailureBanner />
         {needRefresh && (
           <div className="banner info" style={{ margin: '10px 16px 0' }}>
             <span className="grow">A new version of BirdTally is ready.</span>

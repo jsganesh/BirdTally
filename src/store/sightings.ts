@@ -2,7 +2,7 @@ import { currentOffsetMin, currentZone } from '../core/geotime';
 import { newMeta, touch } from '../core/records';
 import type { CountMode, Detection, ID, MediaMeta, Sighting } from '../core/types';
 import { db } from '../db';
-import { bumpOuting, bumpOutingTx } from './outings';
+import { bumpOutingTx } from './outings';
 import { getPosition, getSettings } from './settings';
 
 
@@ -37,9 +37,11 @@ export async function addSighting(input: NewSighting): Promise<Sighting> {
     mediaIds: [],
     idHistory: input.speciesCode ? [{ at: iso, speciesCode: input.speciesCode, source: 'me' }] : []
   };
-  await db.sightings.put(s);
-  await db.settings.where('key').equals('main').modify((row) => void (row.entriesSinceBackup = (row.entriesSinceBackup ?? 0) + 1));
-  if (s.outingId) await bumpOuting(s.outingId);
+  await db.transaction('rw', db.sightings, db.settings, db.outings, async () => {
+    await db.sightings.put(s);
+    await db.settings.where('key').equals('main').modify((row) => void (row.entriesSinceBackup = (row.entriesSinceBackup ?? 0) + 1));
+    if (s.outingId) await bumpOutingTx(s.outingId, st.deviceId);
+  });
   void getPosition().then(({ pos, status }) =>
     db.transaction('rw', db.sightings, async () => {
       const cur = await db.sightings.get(s.id);
