@@ -178,9 +178,10 @@ describe('two phones on one trip', () => {
     expect(r.conflicts).toBe(1);
     const c = (await db.conflicts.toArray())[0];
     expect(c.recordId).toBe(shared.id);
-    // importing the same file again changes nothing
+    // importing the same file again changes nothing, and does not repeat the clash
     const again = await importFile(JSON.stringify(fileFromB));
-    expect(again.added + again.updated).toBe(0);
+    expect(again.added + again.updated + again.conflicts).toBe(0);
+    expect(await db.conflicts.count()).toBe(1);
   });
 
   it('a backup restores voice notes byte for byte', async () => {

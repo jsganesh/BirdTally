@@ -1,7 +1,8 @@
-import type { ExportRecord, MediaMeta, Outing, RecordMeta, Sighting, Trip } from './types';
+import type { Conflict, ExportRecord, MediaMeta, Outing, RecordMeta, Sighting, Trip } from './types';
 
 export const BACKUP_FORMAT = 'birdtally';
-export const BACKUP_FORMAT_VERSION = 1;
+/** 2 added `conflicts`, so clashes awaiting review survive a backup and restore. 1 is still read. */
+export const BACKUP_FORMAT_VERSION = 2;
 
 export interface MediaWithData extends MediaMeta {
   dataBase64: string;
@@ -21,6 +22,13 @@ export interface BirdTallyFile {
   sightings: Sighting[];
   media: MediaWithData[];
   exports: ExportRecord[];
+  /** Absent in version 1 files. */
+  conflicts?: Conflict[];
+}
+
+/** The same clash gets the same id on every device and every import, so it is stored once. */
+export function conflictId(table: Conflict['table'], recordId: string, a: RecordMeta, b: RecordMeta): string {
+  return `${table}:${recordId}:${[a.updatedAt, b.updatedAt].sort().join('|')}`;
 }
 
 export interface MergeResult<T> {

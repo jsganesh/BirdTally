@@ -84,8 +84,15 @@ const MEDIA: Spec = {
 
 const EXPORT: Spec = { id, createdAt: iso, fileName: str, sha256: str, bytes: num, rows: num, outings: listOf(shape({ outingId: id, version: num })) };
 
+const CONFLICT: Spec = { id: (v) => typeof v === 'string' && v.length > 0 && v.length <= 500, table: oneOf('trips', 'outings', 'sightings'), recordId: id, kept: isObj, other: isObj, detectedAt: iso, resolved: optional(bool) };
+
 const LABEL = { trips: 'Trip', outings: 'Birding session', sightings: 'Sighting', media: 'Media item', exports: 'Export record' } as const;
 const SPECS: Record<keyof typeof LABEL, Spec> = { trips: TRIP, outings: OUTING, sightings: SIGHTING, media: MEDIA, exports: EXPORT };
+
+function checkFields(rec: Record<string, unknown>, spec: Spec, where: string) {
+  for (const [field, check] of Object.entries(spec))
+    if (!check(rec[field])) throw new Error(`File is damaged: ${where} has a missing or invalid "${field}".`);
+}
 
 function checkList(key: keyof typeof LABEL, list: unknown) {
   if (!Array.isArray(list)) throw new Error(`File is damaged: "${key}" is missing.`);
@@ -93,10 +100,25 @@ function checkList(key: keyof typeof LABEL, list: unknown) {
   list.forEach((rec, i) => {
     const where = `${LABEL[key]} ${i + 1}`;
     if (!isObj(rec)) throw new Error(`File is damaged: ${where} is not a record.`);
-    for (const [field, check] of Object.entries(SPECS[key]))
-      if (!check(rec[field])) throw new Error(`File is damaged: ${where} has a missing or invalid "${field}".`);
+    checkFields(rec, SPECS[key], where);
     if (seen.has(rec.id)) throw new Error(`File is damaged: ${where} repeats id ${String(rec.id)}.`);
     seen.add(rec.id);
+  });
+}
+
+/** Both versions of a clash must be valid records: "Use other" writes one back into storage. */
+function checkConflicts(list: unknown) {
+  if (!Array.isArray(list)) throw new Error('File is damaged: "conflicts" is missing.');
+  list.forEach((c, i) => {
+    const where = `Conflict ${i + 1}`;
+    if (!isObj(c)) throw new Error(`File is damaged: ${where} is not a record.`);
+    checkFields(c, CONFLICT, where);
+    const spec = SPECS[c.table as 'trips' | 'outings' | 'sightings'];
+    for (const side of ['kept', 'other'] as const) {
+      const rec = c[side] as Record<string, unknown>;
+      if (rec.id !== c.recordId) throw new Error(`File is damaged: ${where} ("${side}") is for a different record.`);
+      checkFields(rec, spec, `${where} ("${side}")`);
+    }
   });
 }
 
@@ -107,6 +129,7 @@ export function validateFile(data: unknown): BirdTallyFile {
   if (typeof v !== 'number' || !Number.isInteger(v) || v < 1) throw new Error('File is damaged: unknown format version.');
   if (v > BACKUP_FORMAT_VERSION) throw new Error('This file was made by a newer version of BirdTally. Update the app first.');
   for (const key of Object.keys(LABEL) as (keyof typeof LABEL)[]) checkList(key, data[key]);
+  if (v >= 2 || data.conflicts !== undefined) checkConflicts(data.conflicts);
   const f = data as unknown as BirdTallyFile;
   const sightingIds = new Set(f.sightings.map((s) => s.id));
   f.media.forEach((m, i) => {

@@ -1,7 +1,7 @@
-import { BACKUP_FORMAT, BACKUP_FORMAT_VERSION, mergeRecords, type BirdTallyFile, type MediaWithData } from '../core/merge';
+import { BACKUP_FORMAT, BACKUP_FORMAT_VERSION, conflictId, mergeRecords, type BirdTallyFile, type MediaWithData } from '../core/merge';
 import { validateFile } from '../core/validate';
-import { newId, touch } from '../core/records';
-import type { ID, Outing, Sighting, Trip } from '../core/types';
+import { touch } from '../core/records';
+import type { Conflict, ID, Outing, Sighting, Trip } from '../core/types';
 import { db } from '../db';
 import { getSettings, updateSettings } from './settings';
 
@@ -41,7 +41,8 @@ export async function buildBackup(kind: 'backup' | 'trip' = 'backup'): Promise<B
     outings: await db.outings.toArray(),
     sightings: await db.sightings.toArray(),
     media,
-    exports: await db.exports.toArray()
+    exports: await db.exports.toArray(),
+    conflicts: await db.conflicts.toArray()
   };
 }
 
@@ -70,32 +71,42 @@ export async function importFile(text: string): Promise<ImportSummary> {
   const f = validateFile(parsed);
   const sum: ImportSummary = { added: 0, updated: 0, conflicts: 0, from: f.deviceName };
   await db.transaction('rw', [db.trips, db.outings, db.sightings, db.media, db.mediaBlobs, db.exports, db.conflicts], async () => {
-    for (const [table, incoming] of [
-      ['trips', f.trips],
-      ['outings', f.outings],
-      ['sightings', f.sightings]
-    ] as const) {
-      const t = db[table] as unknown as import('dexie').Table<(typeof incoming)[number], string>;
-      const local = await t.bulkGet(incoming.map((r) => r.id));
-      const r = mergeRecords(local.filter((x): x is NonNullable<typeof x> => !!x), incoming as never[]);
-      if (r.upserts.length) await t.bulkPut(r.upserts);
-      sum.added += r.added;
-      sum.updated += r.updated;
-      for (const c of r.conflicts) {
-        await db.conflicts.put({ id: newId(), table, recordId: (c.kept as { id: string }).id, kept: c.kept, other: c.other, detectedAt: new Date().toISOString() });
-        sum.conflicts++;
-      }
-    }
-    for (const m of f.media) {
-      if (await db.media.get(m.id)) continue;
-      const { dataBase64, ...meta } = m;
-      await db.mediaBlobs.put({ id: m.id, blob: base64ToBlob(dataBase64, m.mime) });
-      await db.media.put(meta);
-      sum.added++;
-    }
+    for (const table of ['trips', 'outings', 'sightings'] as const) await mergeTable(table, f[table], sum);
+    await importMedia(f, sum);
     for (const e of f.exports) if (!(await db.exports.get(e.id))) await db.exports.put(e);
+    for (const c of f.conflicts ?? []) await addConflict(c, sum);
   });
   return sum;
+}
+
+async function mergeTable(table: Conflict['table'], incoming: (Trip | Outing | Sighting)[], sum: ImportSummary) {
+  const t = db[table] as unknown as import('dexie').Table<Trip | Outing | Sighting, string>;
+  const local = await t.bulkGet(incoming.map((r) => r.id));
+  const r = mergeRecords(local.filter((x) => !!x), incoming);
+  if (r.upserts.length) await t.bulkPut(r.upserts);
+  sum.added += r.added;
+  sum.updated += r.updated;
+  for (const { kept, other } of r.conflicts)
+    await addConflict({ id: conflictId(table, kept.id, kept, other), table, recordId: kept.id, kept, other, detectedAt: new Date().toISOString() }, sum);
+}
+
+async function importMedia(f: BirdTallyFile, sum: ImportSummary) {
+  for (const m of f.media) {
+    if (await db.media.get(m.id)) continue;
+    const { dataBase64, ...meta } = m;
+    await db.mediaBlobs.put({ id: m.id, blob: base64ToBlob(dataBase64, m.mime) });
+    await db.media.put(meta);
+    sum.added++;
+  }
+}
+
+/** Store a clash once; a clash already resolved on either device stays resolved. */
+async function addConflict(c: Conflict, sum: ImportSummary) {
+  const existing = await db.conflicts.get(c.id);
+  if (!existing) {
+    await db.conflicts.put(c);
+    if (!c.resolved) sum.conflicts++;
+  } else if (c.resolved && !existing.resolved) await db.conflicts.update(c.id, { resolved: true });
 }
 
 export async function resolveConflict(conflictId: ID, useOther: boolean) {
