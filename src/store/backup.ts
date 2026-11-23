@@ -1,7 +1,6 @@
 import { BACKUP_FORMAT, BACKUP_FORMAT_VERSION, conflictId, mergeRecords, type BirdTallyFile, type MediaWithData } from '../core/merge';
 import { validateFile } from '../core/validate';
-import { touch } from '../core/records';
-import type { Conflict, ID, Outing, Sighting, Trip } from '../core/types';
+import type { Conflict, Outing, Sighting, Trip } from '../core/types';
 import { db } from '../db';
 import { getSettings, updateSettings } from './settings';
 
@@ -107,17 +106,4 @@ async function addConflict(c: Conflict, sum: ImportSummary) {
     await db.conflicts.put(c);
     if (!c.resolved) sum.conflicts++;
   } else if (c.resolved && !existing.resolved) await db.conflicts.update(c.id, { resolved: true });
-}
-
-export async function resolveConflict(conflictId: ID, useOther: boolean) {
-  const c = await db.conflicts.get(conflictId);
-  if (!c) return;
-  if (useOther) {
-    const st = await getSettings();
-    const t = db[c.table] as unknown as import('dexie').Table<Sighting | Outing | Trip, string>;
-    const cur = await t.get(c.recordId);
-    const other = c.other as Sighting | Outing | Trip;
-    if (cur) await t.put(touch(cur, { ...other, id: cur.id } as never, st.deviceId));
-  }
-  await db.conflicts.update(conflictId, { resolved: true });
 }
