@@ -232,7 +232,7 @@ export function Setup() {
               return (
                 <div key={c.id} className="card stack">
                   <div className="small">
-                    {c.table === 'sightings' ? 'Sighting' : c.table === 'outings' ? 'Outing' : 'Trip'} was changed on two devices.
+                    {c.table === 'sightings' ? 'Sighting' : c.table === 'outings' ? 'Birding session' : 'Trip'} was changed on two devices.
                   </div>
                   <div className="small">
                     Now: <b>{c.table === 'sightings' ? names.name(kept.speciesCode) : ''}</b> {kept.count ?? ''} {kept.note ?? ''} ({new Date(kept.updatedAt).toLocaleString()})

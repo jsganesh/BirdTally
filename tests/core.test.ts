@@ -156,9 +156,9 @@ describe('checklist validation', () => {
     const issues = validateChecklist(outing({ protocol: 'Incidental' }), s, taxaMap);
     expect(issues.some((i) => i.severity === 'error' && i.message.includes('one calendar date'))).toBe(true);
   });
-  it('warns when effort protocols are used on an outing rebuilt after the fact', () => {
+  it('warns when effort protocols are used on a birding session rebuilt after the fact', () => {
     const issues = validateChecklist(outing({ origin: 'confirmed-proposal', protocol: 'Stationary', durationMin: 20, allReported: 'yes' }), one, taxaMap);
-    expect(issues.some((i) => i.message.includes('not recorded by tapping'))).toBe(true);
+    expect(issues.some((i) => i.message.includes('not recorded with Birding mode'))).toBe(true);
     expect(issues.some((i) => i.message.includes('Mark it complete only if'))).toBe(true);
   });
   it('a valid incidental list has no errors', () => {

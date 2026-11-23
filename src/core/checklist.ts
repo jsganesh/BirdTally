@@ -84,12 +84,12 @@ export function validateChecklist(outing: Outing, sightings: Sighting[], taxa: M
   const err = (message: string, field?: string) => issues.push({ severity: 'error', message, field });
   const warn = (message: string, field?: string) => issues.push({ severity: 'warning', message, field });
 
-  if (lines.length === 0) err('No identified species in this outing yet.');
+  if (lines.length === 0) err('No identified species in this birding session yet.');
   for (const l of lines) if (!l.taxon) err(`Species code "${l.speciesCode}" is not in the downloaded taxonomy. Review the identification.`);
 
   const dates = new Set(mine.map((s) => localDateKey(s.observedAt, s.utcOffsetMin)));
   dates.add(localDateKey(outing.startedAt, outing.utcOffsetMin));
-  if (dates.size > 1) err(`Entries fall on ${dates.size} different dates (${[...dates].sort().join(', ')}). eBird checklists cover one calendar date — split this outing.`);
+  if (dates.size > 1) err(`Entries fall on ${dates.size} different dates (${[...dates].sort().join(', ')}). eBird checklists cover one calendar date — split this birding session.`);
 
   const loc = outingLocation(outing, sightings);
   if (!loc && !outing.locationName?.trim()) err('No GPS position and no location name. Add a location name; you will place it on the map during eBird import.', 'locationName');
@@ -107,14 +107,14 @@ export function validateChecklist(outing: Outing, sightings: Sighting[], taxa: M
     if (typeof l.count === 'number' && (l.count < 1 || l.count > 999999 || !Number.isInteger(l.count))) err(`${l.taxon?.en ?? l.speciesCode}: count must be a whole number from 1 to 999999, or X.`);
   }
   if (mine.some((s) => s.possibleCaptive)) warn('Some entries are marked as possibly captive or escaped. eBird asks you not to report captive birds.');
-  if (mine.some((s) => s.tz !== outing.tz)) warn('Time zone changed during this outing. Check the date and start time.');
+  if (mine.some((s) => s.tz !== outing.tz)) warn('Time zone changed during this birding session. Check the date and start time.');
 
   const p = outing.protocol;
   if (!p) err('Choose a protocol.', 'protocol');
   if (p === 'Stationary' || p === 'Traveling') {
     if (!outing.durationMin || outing.durationMin < 1) err(`${p} needs a duration in minutes.`, 'durationMin');
     else if (outing.durationMin >= 1440) err('Duration must be under 24 hours (1440 minutes).', 'durationMin');
-    if (outing.origin !== 'tapped') warn('Start time and duration were not recorded by tapping Start/Stop. Use Traveling or Stationary only if you know your real effort; otherwise choose Incidental.');
+    if (outing.origin !== 'tapped') warn('Start time and duration were not recorded with Birding mode. Use Traveling or Stationary only if you know your real effort; otherwise choose Incidental.');
   }
   if (p === 'Stationary' && span > 0.03) warn(`Entries are up to ${Math.round(span * 1000)} m apart; Stationary means staying within about 30 m. Consider Traveling.`);
   if (p === 'Traveling') {
@@ -128,7 +128,7 @@ export function validateChecklist(outing: Outing, sightings: Sighting[], taxa: M
     err('Answer: did you report every species you identified by sight or sound?', 'allReported');
   if (p === 'Incidental' && outing.allReported === 'yes') warn('Incidental checklists are never complete; this will be exported as "N".');
   if (outing.origin === 'confirmed-proposal' && outing.allReported === 'yes')
-    warn('This outing was put together after the fact. Mark it complete only if you are sure you recorded every species you identified.');
+    warn('This birding session was put together after the fact. Mark it complete only if you are sure you recorded every species you identified.');
 
   if ((outing.locationName?.length ?? 0) > 254) err('Location name is longer than 254 characters.');
   if ((outing.comments?.length ?? 0) > 4000) err('Checklist comments are longer than 4000 characters.');

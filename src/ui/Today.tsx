@@ -121,23 +121,23 @@ export function Today({ go }: { go: (tab: string) => void }) {
           <>
             <span className="rec-dot" aria-hidden />
             <div className="grow">
-              <div style={{ fontWeight: 800 }}>Outing in progress</div>
+              <div style={{ fontWeight: 800 }}>Birding mode on</div>
               <div className="muted small">
                 Since {timeOf(activeOuting.startedAt, activeOuting.utcOffsetMin)} · {live.filter((s) => s.outingId === activeOuting.id).length} entries
               </div>
             </div>
             <button className="btn primary" onClick={() => stopOuting()}>
-              Stop
+              Turn off
             </button>
           </>
         ) : (
           <>
             <div className="grow">
-              <div style={{ fontWeight: 800 }}>No outing running</div>
-              <div className="muted small">Tap Start for real start time and duration. Or just add birds; outings are suggested later.</div>
+              <div style={{ fontWeight: 800 }}>Birding mode off</div>
+              <div className="muted small">Turn on when you start birding to record your real start time and duration. Or just add birds; birding sessions are suggested later.</div>
             </div>
             <button className="btn primary" onClick={() => startOuting()}>
-              Start
+              Turn on
             </button>
           </>
         )}

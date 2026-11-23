@@ -44,9 +44,9 @@ export function Checklists() {
 
       {proposals.length > 0 && (
         <section className="stack">
-          <h2>Suggested outings</h2>
+          <h2>Suggested birding sessions</h2>
           <p className="muted small" style={{ margin: 0 }}>
-            These entries are not in an outing yet. Each suggestion covers one date and one area. Confirm it, then review it as a checklist.
+            These entries are not in a birding session yet. Each suggestion covers one date and one area. Confirm it, then review it as a checklist.
             Times come from your entries — they are evidence, not your real start time or effort.
           </p>
           {proposals.map((p) => {
@@ -77,7 +77,7 @@ export function Checklists() {
       )}
 
       {outings.length === 0 && proposals.length === 0 && (
-        <div className="empty card">No outings yet. Tap Start on the Today screen, or add birds and come back here for suggestions.</div>
+        <div className="empty card">No birding sessions yet. Turn on Birding mode on the Today screen, or just add birds and come back here for suggestions.</div>
       )}
 
       {groups.map(([title, list]) =>
@@ -99,7 +99,7 @@ export function Checklists() {
                       <span className="sub" style={{ display: 'block' }}>
                         {timeOf(o.startedAt, o.utcOffsetMin)} · {nSpecies} species · {o.protocol ?? 'no protocol'}
                         {o.ebirdChecklistId ? ` · ${o.ebirdChecklistId}` : ''}
-                        {o.id === settings?.activeOutingId ? ' · in progress' : ''}
+                        {o.id === settings?.activeOutingId ? ' · birding mode on' : ''}
                         {errors ? ` · ${errors} to fix` : ''}
                       </span>
                     </span>

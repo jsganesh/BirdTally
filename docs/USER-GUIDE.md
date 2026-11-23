@@ -13,7 +13,7 @@
 
 | To do this | Tap |
 |---|---|
-| Record real effort | **Start** when you begin, **Stop** when you finish |
+| Record real effort | **Turn on** Birding mode when you start birding, **Turn off** when you stop |
 | Add a bird you've used recently | its button under **Recent birds** (1 tap) |
 | Add any bird | the bottom field, type 2–3 letters (`tui`, `piwa`, `NZFA`, `nz fan`), then tap the match |
 | Record a call to identify later | **Voice note**, then tap it again to stop |
@@ -27,19 +27,19 @@ Every entry is saved immediately, with its time and one GPS position. The count 
 ## Back at base
 
 1. Open **Notebook → To identify**. Identify each pending entry (Merlin's photo ID and step-by-step questions are useful here) and type Merlin's suggestion into its field if you like.
-2. Open **Checklists**. Birds you logged without tapping Start appear under **Suggested outings**. Each suggestion covers one date and one area and says why it begins where it does. Tap **Confirm** for each one.
-3. Open each outing and work through it:
+2. Open **Checklists**. Birds you logged with Birding mode off appear under **Suggested birding sessions**. Each suggestion covers one date and one area and says why it begins where it does. Tap **Confirm** for each one.
+3. Open each birding session and work through it:
    - **Location name and country code** (for example `NZ`).
-   - **Protocol.** Choose *Incidental* if you can't give real effort. Use *Stationary* or *Traveling* only if you tapped Start/Stop or know your real times; *Traveling* also needs a distance.
+   - **Protocol.** Choose *Incidental* if you can't give real effort. Use *Stationary* or *Traveling* only if Birding mode was on or you know your real times; *Traveling* also needs a distance.
    - **Completeness.** Answer Yes only if you recorded every species you identified.
    - **Counts.** If one species was entered several times, BirdTally uses the largest single count, because the entries may have been the same bird. If they were different birds, type the total.
-   - **Splitting and merging.** Use **Split** if you moved to a different site, or **Merge** for two outings at the same place on the same day.
+   - **Splitting and merging.** Use **Split** if you moved to a different site, or **Merge** for two birding sessions at the same place on the same day.
    - **Fixing problems.** Fix everything marked ✕ under **Checks**, then tap **Mark ready for eBird**.
 4. Tap **Export for eBird**, check the preview, and save the file. Its status becomes *Exported*, not *Submitted*.
 5. On ebird.org, go to **Submit → Import Data → eBird Record Format**, upload the file, fix any unmatched species or locations, and click **Apply Fixes**.
-6. When eBird shows the checklist, paste its link into the outing and tap **Confirm submitted**.
+6. When eBird shows the checklist, paste its link into the birding session and tap **Confirm submitted**.
 
-**Prefer typing it in by hand?** Each outing has an **Entry sheet** to copy from into eBird Mobile or ebird.org/submit.
+**Prefer typing it in by hand?** Each birding session has an **Entry sheet** to copy from into eBird Mobile or ebird.org/submit.
 
 **Photos** are never part of the eBird file. Add them later on each eBird checklist with **Add Media**. They must come from the same date and place as the checklist.
 

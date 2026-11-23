@@ -40,7 +40,7 @@ export function proposeOutings(sightings: Sighting[]): OutingProposal[] {
     else if (minutesBetween(prev.observedAt, s.observedAt) > SPLIT_GAP_MIN)
       reason = `Gap of ${minutesBetween(prev.observedAt, s.observedAt)} min since the previous entry`;
     else if (anchor && s.position && haversineKm(anchor, s.position) > SPLIT_DISTANCE_KM)
-      reason = `Moved ${haversineKm(anchor, s.position).toFixed(1)} km from where this outing started`;
+      reason = `Moved ${haversineKm(anchor, s.position).toFixed(1)} km from where this birding session started`;
 
     if (reason) {
       cur = {

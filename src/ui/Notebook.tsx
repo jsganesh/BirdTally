@@ -100,7 +100,7 @@ export function Notebook() {
                         {[
                           names.alt(s.speciesCode),
                           s.countMode === 'present' ? 'X' : `${s.countMode === 'estimate' ? '~' : ''}${s.count}`,
-                          o ? (o.locationName ?? 'in an outing') : 'not in an outing',
+                          o ? (o.locationName ?? 'in a birding session') : 'not in a birding session',
                           o?.ebirdChecklistId,
                           s.note
                         ]

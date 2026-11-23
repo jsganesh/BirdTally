@@ -51,7 +51,7 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
         {dayLabel(o.startedAt, o.utcOffsetMin)} · {timeOf(o.startedAt, o.utcOffsetMin)}
       </h1>
       <div className="muted small">
-        {o.origin === 'tapped' ? 'Start/Stop tapped in the field.' : 'Put together from entries after the fact — times are evidence only.'}{' '}
+        {o.origin === 'tapped' ? 'Birding mode was on: start time and duration were recorded in the field.' : 'Put together from entries after the fact — times are evidence only.'}{' '}
         {loc ? `Location ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}.` : 'No GPS.'} {span > 0 ? `Entries span ${formatDistance(span, units)}.` : ''}
       </div>
 
@@ -115,7 +115,7 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
 
           {o.protocol && o.protocol !== 'Incidental' && (
             <div className="card stack">
-              <div style={{ fontWeight: 800 }}>Did you report every species you identified by sight or sound during this outing?</div>
+              <div style={{ fontWeight: 800 }}>Did you report every species you identified by sight or sound during this birding session?</div>
               <div className="muted small">
                 Answer “Yes” only if nothing identified is missing — on a complete list, a missing species means you did not detect it. Lists rebuilt from memory or photos are usually “No”.
               </div>
@@ -181,11 +181,11 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
                   </span>
                 </button>
                 {i > 0 && (
-                  <button className="btn small" style={{ marginRight: 6, padding: '0 10px' }} aria-label="Split: start a new outing from this entry" title="Start a new outing from this entry" onClick={() => confirm('Move this entry and all later ones into a new outing?') && splitOutingAt(o.id, s.id)}>
+                  <button className="btn small" style={{ marginRight: 6, padding: '0 10px' }} aria-label="Split: start a new birding session from this entry" title="Start a new birding session from this entry" onClick={() => confirm('Move this entry and all later ones into a new birding session?') && splitOutingAt(o.id, s.id)}>
                     Split
                   </button>
                 )}
-                <button className="btn small" style={{ marginRight: 10, padding: '0 12px' }} aria-label="Remove this entry from the outing" title="Take this entry out of the outing (it stays in your notebook)" onClick={() => updateSighting(s.id, { outingId: null })}>
+                <button className="btn small" style={{ marginRight: 10, padding: '0 12px' }} aria-label="Remove this entry from the birding session" title="Take this entry out of the birding session (it stays in your notebook)" onClick={() => updateSighting(s.id, { outingId: null })}>
                   ✕
                 </button>
               </div>
@@ -193,9 +193,9 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
           </div>
           {sameDay.length > 0 && (
             <div className="card stack">
-              <div className="small muted">Merge another outing from the same date into this one (only if it was the same place):</div>
+              <div className="small muted">Merge another birding session from the same date into this one (only if it was the same place):</div>
               {sameDay.map((x) => (
-                <button key={x.id} className="btn small" onClick={() => confirm('Merge that outing into this one?') && mergeOutings(o.id, x.id)}>
+                <button key={x.id} className="btn small" onClick={() => confirm('Merge that birding session into this one?') && mergeOutings(o.id, x.id)}>
                   Merge {timeOf(x.startedAt, x.utcOffsetMin)} {x.locationName ?? ''}
                 </button>
               ))}
