@@ -3,6 +3,7 @@ import { buildLines, hasErrors, outingLocation, outingPoints, validateChecklist 
 import { formatDistance, KM_PER_MILE, localDateKey, spanKm } from '../core/geotime';
 import type { Outing, Protocol, Sighting, SubmissionState } from '../core/types';
 import { mergeOutings, splitOutingAt, updateOuting, updateSighting } from '../store';
+import { DraftField } from './DraftField';
 import { EntrySheet } from './ExportPanel';
 import { useNames, useSettings, useTaxonomy } from './hooks';
 import { SightingSheet } from './SightingSheet';
@@ -59,16 +60,16 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
         <div className="stack">
           <label className="field">
             Location name (as you want it in eBird)
-            <input defaultValue={o.locationName ?? ''} placeholder="e.g. Tāwharanui Regional Park — North Track" onBlur={(e) => e.target.value !== (o.locationName ?? '') && set({ locationName: e.target.value || undefined })} />
+            <DraftField stored={o.locationName ?? ''} placeholder="e.g. Tāwharanui Regional Park — North Track" onSave={(v) => set({ locationName: v || undefined })} />
           </label>
           <div className="row">
             <label className="field grow">
               Country code
-              <input defaultValue={o.countryCode ?? ''} maxLength={2} placeholder="NZ" onBlur={(e) => set({ countryCode: e.target.value.toUpperCase() || undefined })} />
+              <DraftField stored={o.countryCode ?? ''} maxLength={2} placeholder="NZ" onSave={(v) => set({ countryCode: v.toUpperCase() || undefined })} />
             </label>
             <label className="field grow">
               State/region code (optional)
-              <input defaultValue={o.stateCode ?? ''} maxLength={3} placeholder="AUK" onBlur={(e) => set({ stateCode: e.target.value.toUpperCase() || undefined })} />
+              <DraftField stored={o.stateCode ?? ''} maxLength={3} placeholder="AUK" onSave={(v) => set({ stateCode: v.toUpperCase() || undefined })} />
             </label>
           </div>
 
@@ -89,17 +90,17 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
             <div className="row wrap">
               <label className="field grow">
                 Duration (minutes)
-                <input inputMode="numeric" defaultValue={o.durationMin ?? ''} onBlur={(e) => set({ durationMin: parseInt(e.target.value, 10) || undefined })} />
+                <DraftField inputMode="numeric" stored={String(o.durationMin ?? '')} onSave={(v) => set({ durationMin: parseInt(v, 10) || undefined })} />
               </label>
               {o.protocol === 'Traveling' && (
                 <label className="field grow">
                   Distance ({units})
-                  <input
+                  <DraftField
                     inputMode="decimal"
-                    defaultValue={distDisplay}
+                    stored={String(distDisplay)}
                     placeholder={span ? `at least ${formatDistance(span, units)}` : ''}
-                    onBlur={(e) => {
-                      const v = parseFloat(e.target.value);
+                    onSave={(text) => {
+                      const v = parseFloat(text);
                       set({ distanceKm: Number.isFinite(v) && v > 0 ? (units === 'mi' ? v * KM_PER_MILE : v) : undefined });
                     }}
                   />
@@ -107,7 +108,7 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
               )}
               <label className="field" style={{ width: 120 }}>
                 Observers
-                <input inputMode="numeric" defaultValue={o.observers ?? 1} onBlur={(e) => set({ observers: parseInt(e.target.value, 10) || 1 })} />
+                <DraftField inputMode="numeric" stored={String(o.observers ?? 1)} onSave={(v) => set({ observers: parseInt(v, 10) || 1 })} />
               </label>
             </div>
           )}
@@ -128,7 +129,7 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
 
           <label className="field">
             Checklist comments
-            <textarea defaultValue={o.comments ?? ''} onBlur={(e) => e.target.value !== (o.comments ?? '') && set({ comments: e.target.value || undefined })} />
+            <DraftField multiline stored={o.comments ?? ''} onSave={(v) => set({ comments: v || undefined })} />
           </label>
         </div>
 
@@ -145,14 +146,13 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
                     {l.comments ? ` · ${l.comments}` : ''}
                   </span>
                 </span>
-                <input
+                <DraftField
                   aria-label={`Count for ${l.taxon?.en}`}
                   className="text"
                   style={{ width: 84, textAlign: 'center', fontWeight: 800 }}
-                  defaultValue={String(l.count)}
-                  key={`${l.speciesCode}-${l.count}`}
-                  onBlur={(e) => {
-                    const v = e.target.value.trim().toUpperCase();
+                  stored={String(l.count)}
+                  onSave={(text) => {
+                    const v = text.trim().toUpperCase();
                     const next = { ...o.countOverrides };
                     if (v === '' || v === String(l.count)) return;
                     if (v === 'X') next[l.speciesCode] = 'X';

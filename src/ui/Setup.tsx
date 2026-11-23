@@ -14,6 +14,7 @@ import {
   type ImportSummary
 } from '../store';
 import { useNames, useOnline, useSettings, useTaxonomy } from './hooks';
+import { DraftField } from './DraftField';
 import { Check, PinSetting } from './SetupControls';
 import { pickFile, saveFile, sha256, stamp } from './util';
 
@@ -188,7 +189,7 @@ export function Setup() {
               With a personal key from ebird.org/api/keygen, BirdTally can download the species reported in each trip country and show them as quick-add buttons.
               eBird’s terms don’t allow a shared key, so the key you enter stays on this device and is only sent to api.ebird.org.
             </p>
-            <input className="text" type="password" placeholder="Your eBird API key" defaultValue={settings.ebirdApiKey ?? ''} onBlur={(e) => updateSettings({ ebirdApiKey: e.target.value.trim() || undefined })} />
+            <DraftField className="text" type="password" placeholder="Your eBird API key" aria-label="Your eBird API key" stored={settings.ebirdApiKey ?? ''} onSave={(v) => updateSettings({ ebirdApiKey: v.trim() || undefined })} />
             <button
               className="btn small"
               disabled={!settings.ebirdApiKey || !online || !settings.activeTripId}
@@ -255,7 +256,7 @@ export function Setup() {
         <h2>4 · Preferences</h2>
         <label className="field">
           Device name (shown in backup files)
-          <input defaultValue={settings.deviceName} onBlur={(e) => updateSettings({ deviceName: e.target.value || 'Device' })} />
+          <DraftField stored={settings.deviceName} onSave={(v) => updateSettings({ deviceName: v || 'Device' })} />
         </label>
         <div className="stack">
           <div style={{ fontWeight: 700 }}>Distance units</div>
@@ -277,7 +278,7 @@ export function Setup() {
         </div>
         <label className="field">
           Default number of observers
-          <input inputMode="numeric" defaultValue={settings.defaultObservers} onBlur={(e) => updateSettings({ defaultObservers: Math.max(1, parseInt(e.target.value, 10) || 1) })} />
+          <DraftField inputMode="numeric" stored={String(settings.defaultObservers)} onSave={(v) => updateSettings({ defaultObservers: Math.max(1, parseInt(v, 10) || 1) })} />
         </label>
         <PinSetting hasPin={!!settings.pinHash} />
       </section>

@@ -4,6 +4,7 @@ import { searchTaxa } from '../core/taxonomy';
 import type { CountMode, Detection, Sighting } from '../core/types';
 import { db } from '../db';
 import { addMedia, deleteSighting, updateSighting } from '../store';
+import { DraftField } from './DraftField';
 import { useNames, useTaxonomy } from './hooks';
 import { VoiceRecorder } from './recorder';
 import { capturePhoto, dayLabel, timeOf } from './util';
@@ -138,11 +139,11 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
 
         <label className="field">
           Note
-          <textarea defaultValue={s.note ?? ''} onBlur={(e) => e.target.value !== (s.note ?? '') && set({ note: e.target.value || undefined })} />
+          <DraftField multiline stored={s.note ?? ''} onSave={(v) => set({ note: v || undefined })} />
         </label>
         <label className="field">
           Merlin suggested (typed by you; nothing is synced from Merlin)
-          <input defaultValue={s.merlinSuggestion ?? ''} onBlur={(e) => e.target.value !== (s.merlinSuggestion ?? '') && set({ merlinSuggestion: e.target.value || undefined })} />
+          <DraftField stored={s.merlinSuggestion ?? ''} onSave={(v) => set({ merlinSuggestion: v || undefined })} />
         </label>
         <label className="check">
           <input type="checkbox" checked={!!s.possibleCaptive} onChange={(e) => set({ possibleCaptive: e.target.checked })} />
