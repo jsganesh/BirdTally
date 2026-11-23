@@ -1,0 +1,20 @@
+# Weekly update PRs for npm packages and the SHA-pinned GitHub Actions.
+# Grouped so a normal week is two PRs, not twenty. Security fixes arrive as
+# separate PRs straight away, regardless of this schedule.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
