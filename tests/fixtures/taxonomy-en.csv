@@ -1,0 +1,8 @@
+SCIENTIFIC_NAME,COMMON_NAME,SPECIES_CODE,CATEGORY,TAXON_ORDER,COM_NAME_CODES,SCI_NAME_CODES,BANDING_CODES,ORDER,FAMILY_COM_NAME,FAMILY_SCI_NAME,REPORT_AS,EXTINCT,EXTINCT_YEAR,FAMILY_CODE
+Columba livia,Rock Pigeon,rocpig,species,1875.0,RODO,COLI,ROPI,Columbiformes,Pigeons and Doves,Columbidae,,,,columb2
+Larus glaucoides,Iceland Gull,y00478,species,6654.0,,LAGL,ICGU,Charadriiformes,"Gulls, Terns, and Skimmers",Laridae,,,,larida1
+Nestor notabilis,Kea,kea1,species,12224.0,KEA,NENO,,Psittaciformes,New Zealand Parrots,Strigopidae,,,,strigo1
+Prosthemadera novaeseelandiae,Tui,tui1,species,17822.0,TUI,PRNO,,Passeriformes,Honeyeaters,Meliphagidae,,,,meliph3
+Mohoua albicilla,Whitehead,whiteh1,species,19047.0,WHIT,MOAL,,Passeriformes,Whiteheads,Mohouidae,,,,mohoui1
+Rhipidura fuliginosa,New Zealand Fantail,nezfan1,species,20495.0,NZFA,RHFU,,Passeriformes,Fantails,Rhipiduridae,,,,rhipid1
+Hirundo rustica,Barn Swallow,barswa,species,24292.0,BASW,HIRU,BARS,Passeriformes,Swallows,Hirundinidae,,,,hirund2
