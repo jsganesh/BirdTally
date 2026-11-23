@@ -78,7 +78,7 @@ src/core/      pure TypeScript rules, no browser APIs (shared by every platform)
   merge.ts       trip/backup file format and conflict-aware merge
   records.ts     ids and edit history used for merging
 src/db.ts      IndexedDB schema (Dexie)
-src/store.ts   every user action is one atomic local write
+src/store/     every user action is one atomic local write (settings, sightings, outings, backup, eBird API)
 src/ui/        React screens: Today, Notebook, Checklists, Setup
 tests/         unit tests + an end-to-end test through the real storage layer
 docs/          feasibility report, requirements, user guide

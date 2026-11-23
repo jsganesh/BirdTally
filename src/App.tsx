@@ -5,7 +5,8 @@ import { db } from './db';
 import { Checklists } from './ui/Checklists';
 import { TaxonomyProvider, useOnline, useSettings } from './ui/hooks';
 import { Notebook } from './ui/Notebook';
-import { hashPin, Setup } from './ui/Setup';
+import { Setup } from './ui/Setup';
+import { hashPin } from './ui/SetupControls';
 import { Today } from './ui/Today';
 
 type Tab = 'today' | 'notebook' | 'checklists' | 'setup';
