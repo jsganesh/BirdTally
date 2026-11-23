@@ -5,3 +5,4 @@ dev-dist/
 .DS_Store
 ios/App/Pods/
 ios/App/App/public/
+*.tsbuildinfo
