@@ -1,0 +1,57 @@
+# BirdTally user guide
+
+## Before a trip (on Wi-Fi, about 2 minutes)
+
+1. Open **Setup**.
+2. Under **1 · Prepare for offline birding**, tick your name languages (for example te reo Māori, or the language of the country you're visiting). Then tap **Download species names**.
+3. Check that the **Offline check** shows ✓ for *Species names* and *App saved for offline use*.
+4. Optional:
+   - Under **2 · Trip**, create a trip (for example "Borneo 2027", with countries `MY,ID`) so new entries are tagged with it.
+   - If you have your own eBird API key, download the trip's regional species list. Those species then appear as one-tap buttons.
+
+## In the field
+
+| To do this | Tap |
+|---|---|
+| Record real effort | **Start** when you begin, **Stop** when you finish |
+| Add a bird you've used recently | its button under **Recent birds** (1 tap) |
+| Add any bird | the bottom field, type 2–3 letters (`tui`, `piwa`, `NZFA`, `nz fan`), then tap the match |
+| Record a call to identify later | **Voice note**, then tap it again to stop |
+| Record a phone photo to identify later | **Photo** |
+| Note a bird you couldn't identify | **Unknown bird**, then add a note |
+| Change a count, mark heard-only, add a note | **Details** on the confirmation bar, or tap the entry |
+| Fix a mistake straight away | **Undo** on the confirmation bar |
+
+Every entry is saved immediately, with its time and one GPS position. The count starts as **present (X)**; switch it to **About** or **Exactly** only if you want a number.
+
+## Back at base
+
+1. Open **Notebook → To identify**. Identify each pending entry (Merlin's photo ID and step-by-step questions are useful here) and type Merlin's suggestion into its field if you like.
+2. Open **Checklists**. Birds you logged without tapping Start appear under **Suggested outings**. Each suggestion covers one date and one area and says why it begins where it does. Tap **Confirm** for each one.
+3. Open each outing and work through it:
+   - **Location name and country code** (for example `NZ`).
+   - **Protocol.** Choose *Incidental* if you can't give real effort. Use *Stationary* or *Traveling* only if you tapped Start/Stop or know your real times; *Traveling* also needs a distance.
+   - **Completeness.** Answer Yes only if you recorded every species you identified.
+   - **Counts.** If one species was entered several times, BirdTally uses the largest single count, because the entries may have been the same bird. If they were different birds, type the total.
+   - **Splitting and merging.** Use **Split** if you moved to a different site, or **Merge** for two outings at the same place on the same day.
+   - **Fixing problems.** Fix everything marked ✕ under **Checks**, then tap **Mark ready for eBird**.
+4. Tap **Export for eBird**, check the preview, and save the file. Its status becomes *Exported*, not *Submitted*.
+5. On ebird.org, go to **Submit → Import Data → eBird Record Format**, upload the file, fix any unmatched species or locations, and click **Apply Fixes**.
+6. When eBird shows the checklist, paste its link into the outing and tap **Confirm submitted**.
+
+**Prefer typing it in by hand?** Each outing has an **Entry sheet** to copy from into eBird Mobile or ebird.org/submit.
+
+**Photos** are never part of the eBird file. Add them later on each eBird checklist with **Add Media**. They must come from the same date and place as the checklist.
+
+**Your first upload.** Upload a file with a single checklist first, and confirm that eBird reads the protocol and location correctly before sending a whole trip.
+
+## Moving data and backups
+
+- **Setup → Save backup file** saves everything (including voice notes and photos) as one file. On a phone, the share sheet opens: use AirDrop, Files or email.
+- **Setup → Import / merge a file** on another device merges that file in. If the same sighting was edited on both devices, both versions are kept; you choose which one to keep under **Edited on two devices**.
+- The Today screen reminds you after every 25 entries since your last backup.
+
+## Good to know
+
+- The **Online/Offline** indicator shows only whether the device has a network connection. Nothing in the field needs one.
+- On iPhone, add BirdTally to the Home Screen. The system protects a home-screen app's storage much better than a Safari tab's. Keep backups anyway.

@@ -123,18 +123,21 @@ export function mergeLocaleNames(base: Taxon[], locale: string, csv: string): nu
 
 export interface SearchIndexEntry {
   taxon: Taxon;
-  /** normalized names (all locales) */
+  /** normalized English names (+ aliases) */
   names: string[];
+  /** normalized names in the user's extra display languages (e.g. te reo Māori) */
+  localNames: string[];
   codes: string[];
   sciNorm: string;
 }
 
 export function buildIndex(taxa: Taxon[], locales: string[]): SearchIndexEntry[] {
   return taxa.map((t) => {
-    const names = [t.en, ...locales.flatMap((l) => t.names[l] ?? [])].map(normalize);
+    const en = [normalize(t.en)];
     // Common abbreviations birders type: "nz fantail" for New Zealand Fantail.
-    const aliases = names.filter((n) => n.includes('new zealand')).map((n) => n.replace('new zealand', 'nz'));
-    return { taxon: t, names: [...new Set([...names, ...aliases])], codes: t.codes, sciNorm: normalize(t.sci) };
+    const aliases = en.filter((n) => n.includes('new zealand')).map((n) => n.replace('new zealand', 'nz'));
+    const local = locales.filter((l) => l !== 'en').flatMap((l) => t.names[l] ?? []).map(normalize);
+    return { taxon: t, names: [...new Set([...en, ...aliases])], localNames: [...new Set(local)], codes: t.codes, sciNorm: normalize(t.sci) };
   });
 }
 
@@ -145,47 +148,63 @@ export interface SearchHit {
 }
 
 const CATEGORY_BONUS: Record<string, number> = { species: 6, issf: 2, form: 1 };
+/** Categories whose code lists include their parents' codes (e.g. a hybrid lists both). */
+const COMPOSITE = new Set(['hybrid', 'slash', 'intergrade', 'spuh']);
+
+function nameScore(n: string, q: string, tokens: string[]): number {
+  if (n === q) return 90;
+  if (n.startsWith(q)) return 80;
+  const words = n.split(' ');
+  if (tokens.every((tk) => words.some((w) => w.startsWith(tk)))) return tokens.length > 1 ? 72 : 70;
+  if (q.length >= 3 && n.includes(q)) return 30;
+  return 0;
+}
 
 /**
- * Rank taxa for a typed query. Codes ("TUI", "BASW", "HIRRUS") match exactly; names match
- * by prefix of the whole name, then by prefix of each word, then substring.
+ * Rank taxa for a typed query.
+ *  - Exact 4/6-letter codes ("TUI", "BASW", "HIRRUS") score high, but only for the taxon itself:
+ *    hybrids and slashes also carry their parents' codes, so they score lower on a code match.
+ *  - Names in the user's chosen extra languages get a bonus, so "piwa" finds Pīwakawaka before
+ *    Pine Warbler (code PIWA) for someone who chose te reo Māori names.
+ *  - Recently used and regional-list species are boosted.
  */
 export function searchTaxa(
   index: SearchIndexEntry[],
   query: string,
-  opts: { recent?: string[]; limit?: number } = {}
+  opts: { recent?: string[]; regional?: string[]; limit?: number } = {}
 ): SearchHit[] {
   const q = normalize(query);
   if (!q) return [];
   const qCode = query.trim().toUpperCase();
   const tokens = q.split(' ');
   const recent = new Set(opts.recent ?? []);
+  const regional = new Set(opts.regional ?? []);
   const hits: SearchHit[] = [];
   for (const e of index) {
     let score = 0;
     let matched = '';
     if (e.codes.includes(qCode)) {
-      score = 100;
+      score = COMPOSITE.has(e.taxon.category) ? 50 : 85;
       matched = qCode;
-    } else {
-      for (const n of [...e.names, e.sciNorm]) {
-        let s = 0;
-        if (n === q) s = 90;
-        else if (n.startsWith(q)) s = 80;
-        else {
-          const words = n.split(' ');
-          if (tokens.every((tk) => words.some((w) => w.startsWith(tk)))) s = tokens.length > 1 ? 72 : 70;
-          else if (q.length >= 3 && n.includes(q)) s = 30;
-        }
-        if (s > score) {
-          score = s;
-          matched = n;
-        }
+    }
+    for (const n of [...e.names, e.sciNorm]) {
+      const s = nameScore(n, q, tokens);
+      if (s > score) {
+        score = s;
+        matched = n;
+      }
+    }
+    for (const n of e.localNames) {
+      const s = nameScore(n, q, tokens);
+      if (s && s + 10 > score) {
+        score = s + 10;
+        matched = n;
       }
     }
     if (score > 0) {
       score += CATEGORY_BONUS[e.taxon.category] ?? 0;
-      if (recent.has(e.taxon.code)) score += 4;
+      if (recent.has(e.taxon.code)) score += 10;
+      if (regional.has(e.taxon.code)) score += 8;
       if (e.taxon.extinct) score -= 20;
       hits.push({ taxon: e.taxon, score, matched });
     }

@@ -80,6 +80,16 @@ describe('taxonomy', () => {
     expect(searchTaxa(index, 'hirundo')[0].taxon.code).toBe('barswa');
     expect(searchTaxa(index, 'nz fan')[0].taxon.code).toBe('nezfan1');
   });
+  it('prefers a name in a chosen language over another species\' 4-letter code', () => {
+    // PIWA is Pine Warbler's code; a user with te reo Māori names wants Pīwakawaka.
+    const piwa: Taxon = { code: 'pinwar', sci: 'Setophaga pinus', en: 'Pine Warbler', category: 'species', order: 30000, codes: ['PIWA', 'SEPI'], names: {} };
+    const hybrid: Taxon = { code: 'x00100', sci: 'Setophaga americana x pinus', en: 'Northern Parula x Pine Warbler (hybrid)', category: 'hybrid', order: 30001, codes: ['NOPA', 'PIWA'], names: {} };
+    const withMi = buildIndex([...taxa, piwa, hybrid], ['en', 'mi']);
+    expect(searchTaxa(withMi, 'piwa')[0].taxon.code).toBe('nezfan1');
+    const enOnly = buildIndex([...taxa, piwa, hybrid], ['en']);
+    expect(searchTaxa(enOnly, 'PIWA')[0].taxon.code).toBe('pinwar');
+    expect(searchTaxa(enOnly, 'PIWA')[1].taxon.code).toBe('x00100');
+  });
 });
 
 describe('outing proposals', () => {
