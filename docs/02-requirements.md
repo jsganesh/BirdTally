@@ -28,7 +28,7 @@
   - An eBird import CSV, for outings that don't need photo review (to upload from the phone's browser or the Mac).
   - A trip file for the Mac.
   - A full backup.
-- **Security:** optional Face ID or PIN lock, off by default. Data stays on the device.
+- **Security:** no app lock in release 1; the phone's own passcode protects the data, which stays on the device. *Later, only if users ask for it:* an optional Face ID / fingerprint lock (no PIN — a PIN added little over the phone passcode and risked locking people out of their notebook).
 - **Design:**
   - Readable in bright sun.
   - Usable one-handed, with the thumb, with a camera in the other hand.

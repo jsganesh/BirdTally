@@ -161,7 +161,6 @@ export interface Settings {
   units: 'km' | 'mi';
   displayLocales: string[]; // name languages to show, e.g. ['en', 'mi']
   defaultObservers: number;
-  pinHash?: string;
   ebirdApiKey?: string;
   theme: 'auto' | 'light' | 'dark';
   lastBackupAt?: string;

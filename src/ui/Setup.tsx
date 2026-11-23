@@ -16,7 +16,7 @@ import {
 import { useOnline, useSettings, useTaxonomy } from './hooks';
 import { Conflicts } from './Conflicts';
 import { DraftField } from './DraftField';
-import { Check, PinSetting } from './SetupControls';
+import { Check } from './SetupControls';
 import { pickFile, saveFile, sha256, stamp } from './util';
 
 /** eBird locales that are useful here; any other eBird locale code can be typed. */
@@ -255,7 +255,6 @@ export function Setup() {
           Default number of observers
           <DraftField inputMode="numeric" stored={String(settings.defaultObservers)} onSave={(v) => updateSettings({ defaultObservers: Math.max(1, parseInt(v, 10) || 1) })} />
         </label>
-        <PinSetting hasPin={!!settings.pinHash} />
       </section>
 
       <section className="stack small muted">
