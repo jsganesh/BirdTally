@@ -1,4 +1,5 @@
-import { BACKUP_FORMAT, BACKUP_FORMAT_VERSION, mergeRecords, validateFile, type BirdTallyFile, type MediaWithData } from '../core/merge';
+import { BACKUP_FORMAT, BACKUP_FORMAT_VERSION, mergeRecords, type BirdTallyFile, type MediaWithData } from '../core/merge';
+import { validateFile } from '../core/validate';
 import { newId, touch } from '../core/records';
 import type { ID, Outing, Sighting, Trip } from '../core/types';
 import { db } from '../db';
@@ -48,6 +49,9 @@ export async function markBackedUp() {
   await updateSettings({ lastBackupAt: new Date().toISOString(), entriesSinceBackup: 0 });
 }
 
+/** Larger files risk exceeding the browser's string limit while parsing, on phones especially. */
+export const MAX_IMPORT_BYTES = 400_000_000;
+
 export interface ImportSummary {
   added: number;
   updated: number;
@@ -57,7 +61,13 @@ export interface ImportSummary {
 
 /** Merge a BirdTally file (backup or trip file from another device) into this device. */
 export async function importFile(text: string): Promise<ImportSummary> {
-  const f = validateFile(JSON.parse(text));
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error('This file is not a BirdTally file (it is not valid JSON).');
+  }
+  const f = validateFile(parsed);
   const sum: ImportSummary = { added: 0, updated: 0, conflicts: 0, from: f.deviceName };
   await db.transaction('rw', [db.trips, db.outings, db.sightings, db.media, db.mediaBlobs, db.exports, db.conflicts], async () => {
     for (const [table, incoming] of [

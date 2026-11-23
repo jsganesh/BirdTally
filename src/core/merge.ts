@@ -85,13 +85,3 @@ export function mergeRecords<T extends RecordMeta>(local: T[], incoming: T[]): M
   }
   return res;
 }
-
-export function validateFile(data: unknown): BirdTallyFile {
-  const f = data as BirdTallyFile;
-  if (!f || f.format !== BACKUP_FORMAT) throw new Error('This is not a BirdTally file.');
-  if (typeof f.formatVersion !== 'number' || f.formatVersion > BACKUP_FORMAT_VERSION)
-    throw new Error('This file was made by a newer version of BirdTally. Update the app first.');
-  for (const k of ['trips', 'outings', 'sightings', 'media', 'exports'] as const)
-    if (!Array.isArray(f[k])) throw new Error(`File is damaged: "${k}" is missing.`);
-  return f;
-}

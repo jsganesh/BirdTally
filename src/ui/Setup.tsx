@@ -8,6 +8,7 @@ import {
   downloadTaxonomy,
   importFile,
   markBackedUp,
+  MAX_IMPORT_BYTES,
   requestPersistentStorage,
   updateSettings,
   type ImportSummary
@@ -88,6 +89,7 @@ export function Setup() {
   const doImport = async () => {
     const f = await pickFile('application/json,.json');
     if (!f) return;
+    if (f.size > MAX_IMPORT_BYTES) return setImportMsg(`Could not import: the file is ${(f.size / 1e6).toFixed(0)} MB; the limit is ${MAX_IMPORT_BYTES / 1e6} MB.`);
     try {
       const r: ImportSummary = await importFile(await f.text());
       setImportMsg(`Merged file from ${r.from}: ${r.added} new, ${r.updated} updated${r.conflicts ? `, ${r.conflicts} conflicts to review below` : ''}.`);
