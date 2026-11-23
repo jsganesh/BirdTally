@@ -287,6 +287,11 @@ export function Setup() {
           BirdTally is not affiliated with the Cornell Lab of Ornithology. It never signs in to eBird or Merlin and never submits anything for you: you upload the
           files it makes. Species names: eBird taxonomy via the eBird API.
         </div>
+        <div className="row wrap">
+          <a href="https://clicksbyg.com/birdtally/privacy/" target="_blank" rel="noreferrer">Privacy</a>
+          <a href="https://clicksbyg.com/birdtally/support/" target="_blank" rel="noreferrer">Support</a>
+          <a href="https://github.com/jsganesh/BirdTally/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT licence</a>
+        </div>
       </section>
     </div>
   );

@@ -91,3 +91,9 @@ docs/          feasibility report, requirements, user guide
   - your own eBird API key's regional species list, if you add a key
 - **Backup and trip-file format.** One open JSON file: `format: "birdtally"`, `formatVersion: 1`. It holds every trip, birding session and sighting, with media stored as base64. Each record carries `updatedAt`, `deviceId` and an edit `history`, so merging two phones' files keeps both versions when they clash instead of overwriting one.
 - **Locations.** Coordinates are exact, and nothing is ever published automatically.
+
+## Support, privacy and licence
+
+- Support: https://clicksbyg.com/birdtally/support/ (issues: https://github.com/jsganesh/BirdTally/issues)
+- Privacy policy: https://clicksbyg.com/birdtally/privacy/
+- Licence: [MIT](LICENSE)
