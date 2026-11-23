@@ -9,11 +9,11 @@ import {
   importFile,
   markBackedUp,
   requestPersistentStorage,
-  resolveConflict,
   updateSettings,
   type ImportSummary
 } from '../store';
-import { useNames, useOnline, useSettings, useTaxonomy } from './hooks';
+import { useOnline, useSettings, useTaxonomy } from './hooks';
+import { Conflicts } from './Conflicts';
 import { DraftField } from './DraftField';
 import { Check, PinSetting } from './SetupControls';
 import { pickFile, saveFile, sha256, stamp } from './util';
@@ -35,9 +35,7 @@ export function Setup() {
   const settings = useSettings();
   const online = useOnline();
   const { info } = useTaxonomy();
-  const names = useNames();
   const trips = useLiveQuery(() => db.trips.toArray(), []) ?? [];
-  const conflicts = useLiveQuery(() => db.conflicts.filter((c) => !c.resolved).toArray(), []) ?? [];
   const regionLists = useLiveQuery(() => db.tripLists.toArray(), []) ?? [];
   const [locales, setLocales] = useState<string[]>([]);
   const [extra, setExtra] = useState('');
@@ -224,32 +222,7 @@ export function Setup() {
           <button className="btn" onClick={doImport}>Import / merge a file</button>
         </div>
         {importMsg && <div className="small">{importMsg}</div>}
-        {conflicts.length > 0 && (
-          <div className="stack">
-            <h3>Edited on two devices ({conflicts.length})</h3>
-            {conflicts.map((c) => {
-              const kept = c.kept as { speciesCode?: string; count?: number; note?: string; updatedAt: string };
-              const other = c.other as typeof kept;
-              return (
-                <div key={c.id} className="card stack">
-                  <div className="small">
-                    {c.table === 'sightings' ? 'Sighting' : c.table === 'outings' ? 'Birding session' : 'Trip'} was changed on two devices.
-                  </div>
-                  <div className="small">
-                    Now: <b>{c.table === 'sightings' ? names.name(kept.speciesCode) : ''}</b> {kept.count ?? ''} {kept.note ?? ''} ({new Date(kept.updatedAt).toLocaleString()})
-                  </div>
-                  <div className="small">
-                    Other: <b>{c.table === 'sightings' ? names.name(other.speciesCode) : ''}</b> {other.count ?? ''} {other.note ?? ''} ({new Date(other.updatedAt).toLocaleString()})
-                  </div>
-                  <div className="row">
-                    <button className="btn small" onClick={() => resolveConflict(c.id, false)}>Keep current</button>
-                    <button className="btn small" onClick={() => resolveConflict(c.id, true)}>Use other</button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <Conflicts />
       </section>
 
       <section className="card stack">

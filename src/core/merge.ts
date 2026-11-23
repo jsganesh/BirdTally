@@ -43,7 +43,8 @@ function sameContent(a: RecordMeta, b: RecordMeta): boolean {
  *    `updatedAt`) → the descendant wins, no conflict.
  *  - Same id, edited independently on two devices → the later edit wins and the other
  *    version is kept as a conflict for the user to review, never silently dropped.
- * Deletions travel as tombstones (`deleted: true`), so a delete on one phone reaches the other.
+ * Deletions travel as tombstones (`deleted: true`), so a delete on one phone reaches the other;
+ * a delete that clashes with an independent edit is kept for review like any other clash.
  */
 export function mergeRecords<T extends RecordMeta>(local: T[], incoming: T[]): MergeResult<T> {
   const byId = new Map(local.map((r) => [r.id, r]));
@@ -71,6 +72,8 @@ export function mergeRecords<T extends RecordMeta>(local: T[], incoming: T[]): M
       continue;
     }
     // Edited independently on two devices (or no history): later edit wins, other kept for review.
+    // A delete on one phone and an edit on the other is a clash too: whichever loses must stay
+    // reviewable, or the edit (or the delete) disappears without the user ever seeing it.
     const incomingNewer = inc.updatedAt > cur.updatedAt;
     const kept = incomingNewer ? inc : cur;
     const other = incomingNewer ? cur : inc;
@@ -78,7 +81,7 @@ export function mergeRecords<T extends RecordMeta>(local: T[], incoming: T[]): M
       res.upserts.push(inc);
       res.updated++;
     } else res.unchanged++;
-    if (!kept.deleted && !other.deleted) res.conflicts.push({ kept, other });
+    if (!(kept.deleted && other.deleted)) res.conflicts.push({ kept, other });
   }
   return res;
 }
