@@ -1,12 +1,29 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+
+const POLICY = [
+  "default-src 'self'",
+  "connect-src 'self' https://api.ebird.org",
+  "img-src 'self' blob: data:",
+  "media-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'"
+].join('; ');
+
+// GitHub Pages cannot send headers, so the policy is a <meta> tag. Build only: the dev server injects inline scripts.
+const csp = (): Plugin => ({
+  name: 'csp-meta',
+  apply: 'build',
+  transformIndexHtml: () => [{ tag: 'meta', injectTo: 'head-prepend', attrs: { 'http-equiv': 'Content-Security-Policy', content: POLICY } }]
+});
 
 export default defineConfig({
   base: './',
   plugins: [
     react(),
+    csp(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['icon.svg'],

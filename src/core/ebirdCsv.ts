@@ -42,16 +42,19 @@ export const IMPORT_NAME_OVERRIDES: Record<string, string> = {
   'Rock Pigeon': 'Rock Pigeon (Feral Pigeon)'
 };
 
+// A spreadsheet runs a cell that starts like this as a formula; a leading space keeps it text.
+const FORMULA_START = /^([=@]|[+-](?![\d.]))/;
+
 /** Make a value safe for the quote-less eBird CSV and enforce a maximum length. */
 export function clean(value: string | undefined, max: number): string {
   if (!value) return '';
-  return value
+  const text = value
     .replace(/[\r\n\t]+/g, ' ')
     .replace(/"/g, "'")
     .replace(/,/g, ';')
     .replace(/\s{2,}/g, ' ')
-    .trim()
-    .slice(0, max);
+    .trim();
+  return (FORMULA_START.test(text) ? ` ${text}` : text).slice(0, max);
 }
 
 function splitSci(sci: string): [string, string] {

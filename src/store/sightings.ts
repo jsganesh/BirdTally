@@ -67,6 +67,18 @@ export async function updateSighting(id: ID, changes: Partial<Sighting>) {
   });
 }
 
+/**
+ * A GPS fix that was still pending when the app closed never arrives, so its entry would say
+ * "Getting GPS…" forever. Fixes get 15 s, so anything pending for minutes is over.
+ */
+export async function settleStalePositions(now = Date.now(), staleMs = 5 * 60_000) {
+  const { deviceId } = await getSettings();
+  await db.transaction('rw', db.sightings, async () => {
+    const stale = (await db.sightings.toArray()).filter((s) => s.positionStatus === 'pending' && now - Date.parse(s.createdAt) > staleMs);
+    for (const s of stale) await db.sightings.put(touch(s, { positionStatus: 'unavailable' }, deviceId));
+  });
+}
+
 export async function deleteSighting(id: ID) {
   await updateSighting(id, { deleted: true });
 }

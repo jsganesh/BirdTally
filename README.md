@@ -21,7 +21,7 @@ An offline field notebook for bird photographers. You log birds in a few taps wi
 
 ## Running it
 
-Requires Node 20 or later.
+Requires Node 22.12 or later.
 
 ```bash
 npm install

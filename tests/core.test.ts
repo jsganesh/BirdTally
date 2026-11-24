@@ -241,3 +241,18 @@ describe('merging trip files from two phones', () => {
     expect(r.conflicts).toHaveLength(0);
   });
 });
+
+describe('spreadsheet formulas in the eBird CSV', () => {
+  it('keeps text that starts like a formula from running as one', () => {
+    expect(clean('=HYPERLINK("http://x")', 4000)).toBe(" =HYPERLINK('http://x')");
+    expect(clean('+SUM(1)', 4000)).toBe(' +SUM(1)');
+    expect(clean('@cmd', 4000)).toBe(' @cmd');
+    expect(clean('-two birds', 4000)).toBe(' -two birds');
+  });
+
+  it('leaves ordinary text and numbers alone', () => {
+    expect(clean('Tāwharanui', 4000)).toBe('Tāwharanui');
+    expect(clean('-36.84', 4000)).toBe('-36.84');
+    expect(clean('+2 juveniles', 4000)).toBe('+2 juveniles');
+  });
+});
