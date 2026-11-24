@@ -1,7 +1,8 @@
 import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../src/db';
-import { downloadRegionList } from '../src/store';
+import { missingRegions } from '../src/core/region';
+import { createTrip, downloadRegionList, getSettings, updateSettings } from '../src/store';
 
 const reply = (status: number, body: unknown = []) => vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status }));
 
@@ -28,5 +29,20 @@ describe('downloadRegionList', () => {
   it.each([400, 404])('names the region code eBird does not recognise (%i)', async (status) => {
     vi.stubGlobal('fetch', reply(status));
     await expect(downloadRegionList('ZZ-QQ', 'k')).rejects.toThrow(/does not recognise the region code ZZ-QQ/);
+  });
+});
+
+describe('one key, many trips', () => {
+  it('a saved key survives creating more trips, and each region keeps its own list', async () => {
+    await Promise.all(db.tables.map((t) => t.clear()));
+    await getSettings();
+    await updateSettings({ ebirdApiKey: 'KEY123' });
+    vi.stubGlobal('fetch', reply(200, ['tui1']));
+    await createTrip('Auckland', ['NZ-AUK']);
+    await downloadRegionList('NZ-AUK', 'KEY123');
+    await createTrip('Waikato', ['NZ-WKO']);
+    expect((await getSettings()).ebirdApiKey).toBe('KEY123');
+    expect(missingRegions(['NZ-WKO'], (await db.tripLists.toArray()).map((l) => l.key))).toEqual(['NZ-WKO']);
+    expect(missingRegions(['NZ-AUK'], (await db.tripLists.toArray()).map((l) => l.key))).toEqual([]);
   });
 });

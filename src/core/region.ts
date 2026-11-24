@@ -23,3 +23,9 @@ export function isUnusual(taxon: Taxon | undefined, species: Set<string> | undef
   if (!species || !taxon || !JUDGED.has(taxon.category)) return false;
   return !species.has(taxon.code) && !(taxon.reportAs && species.has(taxon.reportAs));
 }
+
+/** The trip's region codes that have no downloaded list yet. */
+export function missingRegions(regions: string[], downloaded: Iterable<string>): string[] {
+  const have = new Set(downloaded);
+  return regions.filter((r) => !have.has(r));
+}

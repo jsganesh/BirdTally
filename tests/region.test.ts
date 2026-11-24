@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateChecklist } from '../src/core/checklist';
-import { isUnusual, regionSpecies } from '../src/core/region';
+import { isUnusual, missingRegions, regionSpecies } from '../src/core/region';
 import type { Outing, Sighting, Taxon } from '../src/core/types';
 import { validateFile } from '../src/core/validate';
 
@@ -54,5 +54,13 @@ describe('file validation', () => {
     const file = (v: unknown) => ({ format: 'birdtally', formatVersion: 2, kind: 'backup', exportedAt: '2026-11-21T00:00:00.000Z', deviceId: 'd', deviceName: 'n', trips: [], outings: [], media: [], exports: [], conflicts: [], sightings: [{ id: 's1', createdAt: '2026-11-21T00:00:00.000Z', updatedAt: '2026-11-21T00:00:00.000Z', deviceId: 'd', observedAt: '2026-11-21T00:00:00.000Z', tz: 'UTC', utcOffsetMin: 0, positionStatus: 'ok', countMode: 'present', detection: 'seen', mediaIds: [], idHistory: [], unusualHere: v }] });
     expect(() => validateFile(file(true))).not.toThrow();
     expect(() => validateFile(file('yes'))).toThrow(/unusualHere/);
+  });
+});
+
+describe('missingRegions', () => {
+  it('lists only the regions with no list', () => {
+    expect(missingRegions(['NZ-AUK', 'NZ-WKO'], ['NZ-AUK'])).toEqual(['NZ-WKO']);
+    expect(missingRegions(['NZ-AUK'], ['NZ-AUK', 'AU'])).toEqual([]);
+    expect(missingRegions([], [])).toEqual([]);
   });
 });
