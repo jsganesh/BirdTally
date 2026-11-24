@@ -141,12 +141,12 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
         {s.countMode !== 'present' && (
           <div className="stepper">
             <button aria-label="One fewer" onClick={() => set({ count: Math.max(1, (s.count ?? 1) - 1) })}>−</button>
-            <input
+            <DraftField
               aria-label="Count"
               inputMode="numeric"
-              value={s.count ?? ''}
-              onChange={(e) => {
-                const v = parseInt(e.target.value, 10);
+              stored={String(s.count ?? '')}
+              onSave={(text) => {
+                const v = parseInt(text, 10);
                 set({ count: Number.isFinite(v) && v > 0 ? v : undefined });
               }}
             />
