@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { searchTaxa } from '../core/taxonomy';
+import { isAmbiguous, searchTaxa } from '../core/taxonomy';
 import { useTaxonomy, useSettings } from './hooks';
 import { displayNames } from '../core/taxonomy';
 
@@ -12,14 +12,17 @@ export function AddBar({ recent, regional, onPick }: { recent: string[]; regiona
   const settings = useSettings();
   const [q, setQ] = useState('');
   const [sel, setSel] = useState(0);
+  const [chose, setChose] = useState(false); // used the arrow keys: Enter then means that row
   const inputRef = useRef<HTMLInputElement>(null);
   const hits = useMemo(() => (q.trim() ? searchTaxa(index, q, { recent, regional, limit: 12 }) : []), [q, index, recent, regional]);
   const locales = settings?.displayLocales ?? ['en'];
+  const unsure = isAmbiguous(hits) && !chose;
 
   const pick = (code: string) => {
     onPick(code);
     setQ('');
     setSel(0);
+    setChose(false);
     inputRef.current?.blur();
   };
 
@@ -34,14 +37,19 @@ export function AddBar({ recent, regional, onPick }: { recent: string[]; regiona
                 <span className="meta">{info ? 'Try another spelling, a 4-letter code, or save as “Unknown bird”.' : 'Names are stored on this device so search works offline.'}</span>
               </div>
             )}
+            {unsure && (
+              <div className="result">
+                <span className="meta">Several birds match “{q.trim()}”. Tap the one you saw.</span>
+              </div>
+            )}
             {hits.map((h, i) => {
               const alt = displayNames(h.taxon, locales).others.join(' · ');
               return (
                 <button
                   key={h.taxon.code}
                   role="option"
-                  aria-selected={i === sel}
-                  className={`result ${i === sel ? 'sel' : ''}`}
+                  aria-selected={i === sel && !unsure}
+                  className={`result ${i === sel && !unsure ? 'sel' : ''}`}
                   onClick={() => pick(h.taxon.code)}
                 >
                   <span className="name">{h.taxon.en}</span>
@@ -68,17 +76,20 @@ export function AddBar({ recent, regional, onPick }: { recent: string[]; regiona
           onChange={(e) => {
             setQ(e.target.value);
             setSel(0);
+            setChose(false);
           }}
           onKeyDown={(e) => {
             if (e.key === 'ArrowDown') {
               e.preventDefault();
+              setChose(true);
               setSel((s) => Math.min(s + 1, hits.length - 1));
             } else if (e.key === 'ArrowUp') {
               e.preventDefault();
+              setChose(true);
               setSel((s) => Math.max(s - 1, 0));
             } else if (e.key === 'Enter' && hits[sel]) {
               e.preventDefault();
-              pick(hits[sel].taxon.code);
+              if (!unsure) pick(hits[sel].taxon.code);
             } else if (e.key === 'Escape') setQ('');
           }}
         />

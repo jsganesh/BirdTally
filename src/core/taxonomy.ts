@@ -213,6 +213,15 @@ export function searchTaxa(
   return hits.slice(0, opts.limit ?? 12);
 }
 
+/**
+ * True when the top two hits score the same, so nothing but taxonomic order separates them
+ * (a banding code shared by several species, or a name prefix two birds share). Enter must not
+ * pick one for the user then; a recent or regional bird scores higher and so is not a tie.
+ */
+export function isAmbiguous(hits: SearchHit[]): boolean {
+  return hits.length > 1 && hits[0].score === hits[1].score;
+}
+
 /** Display name: English plus the first name in each extra display locale. */
 export function displayNames(t: Taxon, locales: string[]): { primary: string; others: string[] } {
   const others = locales

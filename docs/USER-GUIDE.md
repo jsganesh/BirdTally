@@ -15,7 +15,7 @@
 |---|---|
 | Record real effort | **Turn on** Birding mode when you start birding, **Turn off** when you stop |
 | Add a bird you've used recently | its button under **Recent birds** (1 tap) |
-| Add any bird | the bottom field, type 2–3 letters (`tui`, `piwa`, `NZFA`, `nz fan`), then tap the match |
+| Add any bird | the bottom field, type 2–3 letters (`tui`, `kea`, `nz fan`), then tap the match. Press Enter only when one bird clearly matches; if several birds match equally (a short code like `BASW` or `NZFA` is shared by several species), Enter does nothing and you tap the one you saw |
 | Record a call to identify later | **Voice note**, then tap it again to stop |
 | Record a phone photo to identify later | **Photo** |
 | Note a bird you couldn't identify | **Unknown bird**, then add a note |
