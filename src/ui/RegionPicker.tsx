@@ -1,39 +1,40 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { listRegions, type RegionOption } from '../store';
-import { useOnline, useSettings } from './hooks';
+import { useCountries } from './useCountries';
 
 /** Choose a trip region from eBird's own lists instead of typing a code. Needs the saved key and a connection. */
 export function RegionPicker({ onAdd }: { onAdd: (code: string) => void }) {
-  const key = useSettings()?.ebirdApiKey;
-  const online = useOnline();
-  const [countries, setCountries] = useState<RegionOption[]>();
+  const { key, online, countries, error, retry } = useCountries();
   const [areas, setAreas] = useState<RegionOption[]>([]);
   const [country, setCountry] = useState('');
   const [area, setArea] = useState('');
-  const [error, setError] = useState('');
+  const [areaError, setAreaError] = useState('');
   const latest = useRef(0); // a slow answer for an earlier country must not overwrite a newer choice
-
-  useEffect(() => {
-    if (!key || !online || countries) return;
-    listRegions('country', 'world', key).then(setCountries, (e: Error) => setError(e.message));
-  }, [key, online, countries]);
 
   const chooseCountry = async (code: string) => {
     const mine = ++latest.current;
     setCountry(code);
     setArea('');
     setAreas([]);
+    setAreaError('');
     if (!code) return;
     try {
       const list = await listRegions('subnational1', code, key!);
       if (mine === latest.current) setAreas(list);
     } catch (e) {
-      setError((e as Error).message);
+      if (mine === latest.current) setAreaError((e as Error).message);
     }
   };
 
   if (!key) return <p className="muted small" style={{ margin: 0 }}>Tip: save your eBird key (step below) to choose regions from a list instead of typing codes.</p>;
   if (!online) return <p className="muted small" style={{ margin: 0 }}>Connect to the internet to choose regions from a list, or type the codes.</p>;
+  if (error)
+    return (
+      <div className="stack">
+        <div className="issue error" role="alert">Could not load the country list: {error} You can still type the region codes.</div>
+        <div><button className="btn small" onClick={retry}>Try again</button></div>
+      </div>
+    );
 
   return (
     <div className="stack">
@@ -54,7 +55,7 @@ export function RegionPicker({ onAdd }: { onAdd: (code: string) => void }) {
         )}
         <button className="btn small" disabled={!country} onClick={() => onAdd(area || country)}>Add region</button>
       </div>
-      {error && <div className="small" role="status">{error}</div>}
+      {areaError && <div className="small" role="status">Could not load the areas: {areaError}</div>}
     </div>
   );
 }

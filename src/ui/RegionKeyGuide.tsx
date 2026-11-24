@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 import { missingRegions, regionsToFetch } from '../core/region';
 import type { Trip } from '../core/types';
 import { db } from '../db';
-import { downloadRegionList, updateSettings } from '../store';
+import { cleanApiKey, downloadRegionList, updateSettings } from '../store';
 import { DraftField } from './DraftField';
 import { useOnline, useSettings } from './hooks';
+import { useCountries } from './useCountries';
 
 const STEPS = (
   <ol className="small stack" style={{ margin: 0, paddingLeft: 20 }}>
@@ -24,6 +25,7 @@ const STEPS = (
 export function RegionKeyGuide({ trips }: { trips: Trip[] }) {
   const settings = useSettings();
   const online = useOnline();
+  const check = useCountries();
   const lists = useLiveQuery(() => db.tripLists.toArray(), []) ?? [];
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
@@ -73,9 +75,14 @@ export function RegionKeyGuide({ trips }: { trips: Trip[] }) {
             for a description. It needs your own free eBird key, set up once while online. After that, each trip’s species list downloads by itself whenever you are online:
           </p>
           {STEPS}
-          <DraftField className="text" type="password" placeholder="Your eBird key" aria-label="Your eBird key" stored={key ?? ''} onSave={(v) => updateSettings({ ebirdApiKey: v.trim() || undefined })} />
+          <DraftField className="text" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="off" placeholder="Your eBird key" aria-label="Your eBird key" stored={key ?? ''} onSave={(v) => updateSettings({ ebirdApiKey: cleanApiKey(v) || undefined })} />
           {key && <button className="btn small" onClick={() => setChanging(false)}>Done</button>}
         </>
+      )}
+      {key && online && (
+        <div className="small" role="status">
+          {check.error ? `✕ ${check.error} The saved key has ${key.length} characters.` : check.countries ? '✓ eBird accepted your key.' : 'Checking your key with eBird…'}
+        </div>
       )}
       {key && regions.length > 0 && (
         <button className="btn small" disabled={busy || !online} onClick={() => download(toFetch.length ? toFetch : regions)}>
