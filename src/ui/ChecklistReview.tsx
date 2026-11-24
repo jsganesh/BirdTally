@@ -7,6 +7,7 @@ import { DeleteChecklist } from './DeleteChecklist';
 import { DraftField } from './DraftField';
 import { EntrySheet } from './ExportPanel';
 import { useNames, useSettings, useTaxonomy } from './hooks';
+import { RegionNotice } from './RegionNotice';
 import { SightingSheet } from './SightingSheet';
 import { dayLabel, parseChecklistId, timeOf } from './util';
 
@@ -57,6 +58,8 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
         {o.origin === 'tapped' ? 'Birding mode was on: start time and duration were recorded in the field.' : 'Put together from entries after the fact — times are evidence only.'}{' '}
         {loc ? `Location ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}.` : 'No GPS.'} {span > 0 ? `Entries span ${formatDistance(span, units)}.` : ''}
       </div>
+
+      <RegionNotice position={loc} tripId={o.tripId} what="This checklist’s location" />
 
       <div className="two-col">
         <div className="stack">

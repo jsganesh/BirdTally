@@ -105,6 +105,14 @@ export interface Trip extends RecordMeta {
   endDate?: string;
 }
 
+/** A region's bounding box in degrees (eBird's `bounds`). minX greater than maxX means the box crosses the antimeridian. */
+export interface GeoBounds {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
 export interface MediaMeta extends RecordMeta {
   sightingId: ID;
   kind: 'audio' | 'photo';

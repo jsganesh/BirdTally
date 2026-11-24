@@ -1,4 +1,5 @@
 import { mergeLocaleNames, parseEbirdTaxonomyCsv } from '../core/taxonomy';
+import type { GeoBounds } from '../core/types';
 import { db } from '../db';
 import { updateSettings } from './settings';
 
@@ -40,6 +41,23 @@ export async function downloadRegionList(region: string, apiKey: string) {
   if (r.status === 400 || r.status === 404) throw new Error(`eBird does not recognise the region code ${region}. Use a code like NZ or NZ-AUK.`);
   if (!r.ok) throw new Error(`eBird returned ${r.status}`);
   const codes: string[] = await r.json();
-  await db.tripLists.put({ key: region.toUpperCase(), codes, downloadedAt: new Date().toISOString() });
+  const bounds = await fetchBounds(region, apiKey);
+  await db.tripLists.put({ key: region.toUpperCase(), codes, downloadedAt: new Date().toISOString(), bounds });
   return codes.length;
+}
+
+/**
+ * The region's bounding box for the GPS cross-check. A refusal or a missing box gives null (stop asking); a network
+ * error gives undefined so it is tried again later. Either way the species list itself is still saved.
+ */
+async function fetchBounds(region: string, apiKey: string): Promise<GeoBounds | null | undefined> {
+  try {
+    const r = await fetch(`${API}/ref/region/info/${encodeURIComponent(region)}`, { headers: { 'x-ebirdapitoken': apiKey } });
+    if (!r.ok) return null;
+    const b = (await r.json())?.bounds;
+    const box = { minX: b?.minX, maxX: b?.maxX, minY: b?.minY, maxY: b?.maxY };
+    return Object.values(box).every(Number.isFinite) ? box : null;
+  } catch {
+    return undefined;
+  }
 }

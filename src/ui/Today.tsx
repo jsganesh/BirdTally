@@ -5,6 +5,7 @@ import { db } from '../db';
 import { addMedia, addSighting, deleteSighting, startOuting, stopOuting } from '../store';
 import { AddBar } from './AddBar';
 import { useNames, useSettings, useTaxonomy } from './hooks';
+import { RegionNotice } from './RegionNotice';
 import { UnusualSheet } from './UnusualSheet';
 import { useRegion } from './useRegion';
 import { SightingSheet } from './SightingSheet';
@@ -36,6 +37,7 @@ export function Today({ go }: { go: (tab: string) => void }) {
   const todayKey = localDateKey(new Date().toISOString(), currentOffsetMin());
   const live = (recentRows ?? []).filter((s) => !s.deleted);
   const todays = live.filter((s) => localDateKey(s.observedAt, s.utcOffsetMin) === todayKey);
+  const lastFix = live.find((s) => s.tripId === settings?.activeTripId && s.position); // newest first
   const pendingCount = live.filter((s) => !s.speciesCode).length;
   const recent = useMemo(() => {
     const seen: string[] = [];
@@ -99,6 +101,10 @@ export function Today({ go }: { go: (tab: string) => void }) {
         <button className="banner" onClick={() => go('setup')}>
           💾 {settings?.entriesSinceBackup} entries since your last backup. Tap to save a backup file.
         </button>
+      )}
+
+      {lastFix && (
+        <RegionNotice position={lastFix.position} what={`Your last GPS fix (${names.name(lastFix.speciesCode)}, ${timeOf(lastFix.observedAt, lastFix.utcOffsetMin)})`} onSetup={() => go('setup')} />
       )}
 
       <div className={`card outing-banner ${activeOuting ? 'active' : ''}`}>

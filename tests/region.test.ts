@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateChecklist } from '../src/core/checklist';
-import { isUnusual, missingRegions, regionSpecies } from '../src/core/region';
+import { insideBounds, isUnusual, missingRegions, outsideRegions, regionSpecies, regionsToFetch } from '../src/core/region';
 import type { Outing, Sighting, Taxon } from '../src/core/types';
 import { validateFile } from '../src/core/validate';
 
@@ -62,5 +62,38 @@ describe('missingRegions', () => {
     expect(missingRegions(['NZ-AUK', 'NZ-WKO'], ['NZ-AUK'])).toEqual(['NZ-WKO']);
     expect(missingRegions(['NZ-AUK'], ['NZ-AUK', 'AU'])).toEqual([]);
     expect(missingRegions([], [])).toEqual([]);
+  });
+});
+
+describe('GPS cross-check geometry', () => {
+  const auckland = { minX: 174.3, maxX: 175.4, minY: -37.3, maxY: -36.1 };
+  const wellington = { minX: 174.6, maxX: 175.5, minY: -41.4, maxY: -40.8 };
+  const chatham = { minX: 172, maxX: -175, minY: -45, maxY: -34 }; // crosses the antimeridian
+
+  it('inside, outside and the margin around a box', () => {
+    expect(insideBounds({ lat: -36.85, lng: 174.76 }, auckland)).toBe(true);
+    expect(insideBounds({ lat: -36.0, lng: 174.8 }, auckland)).toBe(true); // 0.1 degree north: within the margin
+    expect(insideBounds({ lat: -41.29, lng: 174.78 }, auckland)).toBe(false);
+    expect(insideBounds({ lat: 51.5, lng: -0.12 }, auckland)).toBe(false);
+  });
+
+  it('handles a box that crosses the antimeridian', () => {
+    expect(insideBounds({ lat: -43.9, lng: -176.5 }, chatham)).toBe(true);
+    expect(insideBounds({ lat: -40, lng: 173 }, chatham)).toBe(true);
+    expect(insideBounds({ lat: -40, lng: 0 }, chatham)).toBe(false);
+  });
+
+  it('is outside only when every region has a box and none contains the point', () => {
+    const wgtn = { lat: -41.29, lng: 174.78 };
+    expect(outsideRegions(wgtn, [auckland])).toBe(true);
+    expect(outsideRegions(wgtn, [auckland, wellington])).toBe(false);
+    expect(outsideRegions(wgtn, [auckland, null])).toBe(false); // a region with no box: cannot know
+    expect(outsideRegions(wgtn, [auckland, undefined])).toBe(false);
+    expect(outsideRegions(wgtn, [])).toBe(false);
+  });
+
+  it('regionsToFetch asks for missing lists and for lists saved before boxes existed', () => {
+    const records = [{ key: 'NZ-AUK', bounds: auckland }, { key: 'NZ-WKO' }, { key: 'NZ-OTA', bounds: null }];
+    expect(regionsToFetch(['NZ-AUK', 'NZ-WKO', 'NZ-OTA', 'NZ-NSN'], records)).toEqual(['NZ-WKO', 'NZ-NSN']);
   });
 });

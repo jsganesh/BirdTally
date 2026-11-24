@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
-import { missingRegions } from '../core/region';
+import { missingRegions, regionsToFetch } from '../core/region';
 import type { Trip } from '../core/types';
 import { db } from '../db';
 import { downloadRegionList, updateSettings } from '../store';
@@ -33,6 +33,7 @@ export function RegionKeyGuide({ trips }: { trips: Trip[] }) {
   const trip = trips.find((t) => t.id === settings?.activeTripId);
   const regions = trip?.countryCodes ?? [];
   const missing = missingRegions(regions, lists.map((l) => l.key));
+  const toFetch = regionsToFetch(regions, lists); // also lists saved before bounding boxes existed
 
   const download = async (codes: string[]) => {
     setBusy(true);
@@ -46,12 +47,12 @@ export function RegionKeyGuide({ trips }: { trips: Trip[] }) {
     }
   };
 
-  // Once per trip and set of missing regions, so a refused key or a bad code is not retried in a loop.
+  // Once per trip and set of regions to fetch, so a refused key or a bad code is not retried in a loop.
   useEffect(() => {
-    const signature = `${trip?.id}:${missing.join()}`;
-    if (!key || !online || !missing.length || busy || tried.current === signature) return;
+    const signature = `${trip?.id}:${toFetch.join()}`;
+    if (!key || !online || !toFetch.length || busy || tried.current === signature) return;
     tried.current = signature;
-    void download(missing);
+    void download(toFetch);
   });
 
   const status = !regions.length ? 'Off: create a trip with a region code above first.' : missing.length ? `Off: no species list yet for ${missing.join(', ')}.` : `On for ${regions.join(', ')}.`;
@@ -77,7 +78,7 @@ export function RegionKeyGuide({ trips }: { trips: Trip[] }) {
         </>
       )}
       {key && regions.length > 0 && (
-        <button className="btn small" disabled={busy || !online} onClick={() => download(missing.length ? missing : regions)}>
+        <button className="btn small" disabled={busy || !online} onClick={() => download(toFetch.length ? toFetch : regions)}>
           {busy ? 'Downloading…' : missing.length ? `Download list for ${missing.join(', ')}` : 'Update lists'}
         </button>
       )}

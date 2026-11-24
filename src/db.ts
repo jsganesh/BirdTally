@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Conflict, ExportRecord, MediaMeta, Outing, Settings, Sighting, Taxon, TaxonomyInfo, Trip } from './core/types';
+import type { Conflict, ExportRecord, GeoBounds, MediaMeta, Outing, Settings, Sighting, Taxon, TaxonomyInfo, Trip } from './core/types';
 
 export interface TaxonomyBlob extends TaxonomyInfo {
   key: 'current';
@@ -9,6 +9,8 @@ export interface TripList {
   key: string; // region code, e.g. NZ
   codes: string[];
   downloadedAt: string;
+  /** undefined: not fetched yet. null: eBird has no box for this region, so the GPS cross-check stays off for it. */
+  bounds?: GeoBounds | null;
 }
 export interface SettingsRow extends Settings {
   key: 'main';
