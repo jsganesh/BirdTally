@@ -4,7 +4,6 @@ import { db } from '../db';
 import {
   buildBackup,
   createTrip,
-  downloadRegionList,
   downloadTaxonomy,
   importFile,
   markBackedUp,
@@ -16,6 +15,7 @@ import {
 import { useOnline, useSettings, useTaxonomy } from './hooks';
 import { Conflicts } from './Conflicts';
 import { DraftField } from './DraftField';
+import { RegionKeyGuide } from './RegionKeyGuide';
 import { Check } from './SetupControls';
 import { pickFile, saveFile, sha256, stamp } from './util';
 
@@ -37,7 +37,6 @@ export function Setup() {
   const online = useOnline();
   const { info } = useTaxonomy();
   const trips = useLiveQuery(() => db.trips.toArray(), []) ?? [];
-  const regionLists = useLiveQuery(() => db.tripLists.toArray(), []) ?? [];
   const [locales, setLocales] = useState<string[]>([]);
   const [extra, setExtra] = useState('');
   const [progress, setProgress] = useState('');
@@ -144,7 +143,7 @@ export function Setup() {
       <section className="card stack">
         <h2>2 · Trip</h2>
         <p className="muted small" style={{ margin: 0 }}>
-          New entries are tagged with the active trip. Country codes are used for checklists and the optional regional species list.
+          New entries are tagged with the active trip. A region code is a country (NZ) or an area in it (NZ-AUK for Auckland); you will find it in the address of any eBird region page, such as ebird.org/region/NZ-AUK. It is used for checklists and the optional unusual-bird warning.
         </p>
         {trips.length > 0 && (
           <label className="field">
@@ -163,7 +162,7 @@ export function Setup() {
         )}
         <div className="row wrap">
           <input className="text" style={{ flex: '1 1 100%' }} aria-label="New trip name" placeholder="New trip name, e.g. Borneo 2027" value={tripName} onChange={(e) => setTripName(e.target.value)} />
-          <input className="text grow" aria-label="Trip country codes" placeholder="Countries: MY,ID" value={tripCountries} onChange={(e) => setTripCountries(e.target.value)} />
+          <input className="text grow" aria-label="Trip region codes" placeholder="Regions: NZ-AUK,NZ-WKO" value={tripCountries} onChange={(e) => setTripCountries(e.target.value)} />
           <button
             className="btn small"
             disabled={!tripName.trim()}
@@ -182,32 +181,7 @@ export function Setup() {
             Create trip
           </button>
         </div>
-        <details>
-          <summary className="small" style={{ fontWeight: 700 }}>Optional: regional species list (needs your own eBird API key)</summary>
-          <div className="stack" style={{ marginTop: 10 }}>
-            <p className="muted small" style={{ margin: 0 }}>
-              With a personal key from ebird.org/api/keygen, BirdTally can download the species reported in each trip country and show them as quick-add buttons.
-              eBird’s terms don’t allow a shared key, so the key you enter stays on this device and is only sent to api.ebird.org.
-            </p>
-            <DraftField className="text" type="password" placeholder="Your eBird API key" aria-label="Your eBird API key" stored={settings.ebirdApiKey ?? ''} onSave={(v) => updateSettings({ ebirdApiKey: v.trim() || undefined })} />
-            <button
-              className="btn small"
-              disabled={!settings.ebirdApiKey || !online || !settings.activeTripId}
-              onClick={async () => {
-                const t = trips.find((x) => x.id === settings.activeTripId);
-                try {
-                  const counts = await Promise.all((t?.countryCodes ?? []).map((c) => downloadRegionList(c, settings.ebirdApiKey!)));
-                  setProgress(`Regional lists saved: ${counts.reduce((a, b) => a + b, 0)} species.`);
-                } catch (e) {
-                  setProgress((e as Error).message);
-                }
-              }}
-            >
-              Download list for active trip
-            </button>
-            {regionLists.length > 0 && <div className="small muted">Saved: {regionLists.map((r) => `${r.key} (${r.codes.length})`).join(', ')}</div>}
-          </div>
-        </details>
+        <RegionKeyGuide trips={trips} />
       </section>
 
       <section className="card stack">

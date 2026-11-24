@@ -5,6 +5,8 @@ import { db } from '../db';
 import { addMedia, addSighting, deleteSighting, startOuting, stopOuting } from '../store';
 import { AddBar } from './AddBar';
 import { useNames, useSettings, useTaxonomy } from './hooks';
+import { UnusualSheet } from './UnusualSheet';
+import { useRegion } from './useRegion';
 import { SightingSheet } from './SightingSheet';
 import { capturePhoto, timeOf } from './util';
 import { useVoiceNote } from './useVoiceNote';
@@ -20,6 +22,8 @@ export function Today({ go }: { go: (tab: string) => void }) {
   const { info } = useTaxonomy();
   const [toast, setToast] = useState<ToastState>();
   const [open, setOpen] = useState<string>();
+  const [asking, setAsking] = useState<string>();
+  const region = useRegion();
 
   const activeOuting = useLiveQuery(() => (settings?.activeOutingId ? db.outings.get(settings.activeOutingId) : undefined), [settings?.activeOutingId]);
   const recentRows = useLiveQuery(() => db.sightings.orderBy('observedAt').reverse().limit(400).toArray(), []);
@@ -56,7 +60,8 @@ export function Today({ go }: { go: (tab: string) => void }) {
   }, [toast]);
 
   const add = async (code: string) => {
-    const s = await addSighting({ speciesCode: code });
+    if (region.needsConfirm(code)) return setAsking(code);
+    const s = await addSighting({ speciesCode: code, unusualHere: region.unusual(code) || undefined });
     if (navigator.vibrate) navigator.vibrate(30);
     setToast({ id: s.id, text: `${names.name(code)} saved · ${timeOf(s.observedAt, s.utcOffsetMin)}` });
   };
@@ -214,6 +219,19 @@ export function Today({ go }: { go: (tab: string) => void }) {
         </div>
       )}
       {open && <SightingSheet id={open} onClose={() => setOpen(undefined)} />}
+      {asking && (
+        <UnusualSheet
+          name={names.name(asking)}
+          regions={region.label}
+          onCancel={() => setAsking(undefined)}
+          onRecord={async () => {
+            const s = await addSighting({ speciesCode: asking, unusualHere: true });
+            setAsking(undefined);
+            setToast({ id: s.id, text: `${names.name(asking)} saved as unusual · add a note now or later` });
+            setOpen(s.id);
+          }}
+        />
+      )}
     </div>
   );
 }

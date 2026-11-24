@@ -18,6 +18,7 @@ An offline field notebook for bird photographers. You log birds in a few taps wi
 | Submission tracking: Ready → Exported → Submitted (with the S-number), plus an edited-after-export warning | |
 | Searchable notebook/archive; backup and trip files merged across devices, with conflicts kept for review | |
 | Dark, light ("bright sun") and automatic themes; km or miles | |
+| Optional unusual-bird warning: with your own eBird API key and a trip region code (NZ or NZ-AUK), a bird never reported in the region asks "Record anyway?", is flagged, and reminds you at review to add a description or photo. Works offline once the lists are downloaded | GPS cross-check of the region and a region picker (Step 2, [design](docs/superpowers/specs/2026-11-24-unusual-bird-warning-design.md)) |
 
 ## Running it
 

@@ -58,6 +58,8 @@ export interface Sighting extends RecordMeta {
   /** What Merlin suggested, typed by the user. Never synced from Merlin. */
   merlinSuggestion?: string;
   possibleCaptive?: boolean;
+  /** Recorded after a warning that the bird is not on the trip's regional species lists. */
+  unusualHere?: boolean;
   mediaIds: ID[];
   idHistory: IdDecision[];
 }

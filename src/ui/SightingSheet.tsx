@@ -8,6 +8,8 @@ import { Dialog } from './Dialog';
 import { DraftField } from './DraftField';
 import { useNames, useTaxonomy } from './hooks';
 import { VoiceRecorder } from './recorder';
+import { UnusualSheet } from './UnusualSheet';
+import { useRegion } from './useRegion';
 import { useVoiceNote } from './useVoiceNote';
 import { capturePhoto, dayLabel, timeOf } from './util';
 
@@ -30,6 +32,8 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
   const { index } = useTaxonomy();
   const [changing, setChanging] = useState(false);
   const [q, setQ] = useState('');
+  const [asking, setAsking] = useState<string>();
+  const region = useRegion();
   const voice = useVoiceNote(async (blob, seconds) => {
     await addMedia(id, blob, 'audio', seconds);
   });
@@ -37,6 +41,12 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
 
   if (!s) return null;
   const set = (c: Partial<Sighting>) => updateSighting(s.id, c);
+  const identify = async (code: string, unusual: boolean) => {
+    await set({ speciesCode: code, unusualHere: unusual || undefined });
+    setAsking(undefined);
+    setChanging(false);
+    setQ('');
+  };
   const pending = !s.speciesCode;
 
   // A deleted entry offers only Restore, so it can't be deleted twice or edited unseen.
@@ -88,15 +98,11 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
                 <button
                   key={h.taxon.code}
                   className="item"
-                  onClick={async () => {
-                    await set({ speciesCode: h.taxon.code });
-                    setChanging(false);
-                    setQ('');
-                  }}
+                  onClick={() => (region.needsConfirm(h.taxon.code) ? setAsking(h.taxon.code) : identify(h.taxon.code, region.unusual(h.taxon.code)))}
                 >
                   <span className="grow">
                     <span className="title">{h.taxon.en}</span>
-                    <span className="sub" style={{ display: 'block' }}>{h.taxon.sci}</span>
+                    <span className="sub" style={{ display: 'block' }}>{region.unusual(h.taxon.code) ? 'unusual here · ' : ''}{h.taxon.sci}</span>
                   </span>
                 </button>
               ))}
@@ -107,7 +113,7 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
       ) : (
         <div className="row wrap">
           <button className="btn small" onClick={() => setChanging(true)}>Change species</button>
-          <button className="btn small" onClick={() => set({ speciesCode: undefined })}>Mark identification pending</button>
+          <button className="btn small" onClick={() => set({ speciesCode: undefined, unusualHere: undefined })}>Mark identification pending</button>
         </div>
       )}
 
@@ -197,6 +203,7 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
           </ul>
         </details>
       )}
+      {asking && <UnusualSheet name={names.name(asking)} regions={region.label} onCancel={() => setAsking(undefined)} onRecord={() => identify(asking, true)} />}
     </Dialog>
   );
 }

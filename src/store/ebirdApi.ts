@@ -36,7 +36,9 @@ export async function downloadTaxonomy(locales: string[], onProgress: (msg: stri
 /** Optional: likely species for a region. Needs the user's own eBird API key. */
 export async function downloadRegionList(region: string, apiKey: string) {
   const r = await fetch(`${API}/product/spplist/${encodeURIComponent(region)}`, { headers: { 'x-ebirdapitoken': apiKey } });
-  if (!r.ok) throw new Error(r.status === 403 ? 'eBird refused the API key.' : `eBird returned ${r.status}`);
+  if (r.status === 403) throw new Error('eBird refused the key. Check that you copied all of it and that it is your own.');
+  if (r.status === 400 || r.status === 404) throw new Error(`eBird does not recognise the region code ${region}. Use a code like NZ or NZ-AUK.`);
+  if (!r.ok) throw new Error(`eBird returned ${r.status}`);
   const codes: string[] = await r.json();
   await db.tripLists.put({ key: region.toUpperCase(), codes, downloadedAt: new Date().toISOString() });
   return codes.length;

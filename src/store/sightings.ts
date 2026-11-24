@@ -14,6 +14,7 @@ export interface NewSighting {
   count?: number;
   detection?: Detection;
   note?: string;
+  unusualHere?: boolean;
 }
 
 /** Save immediately (no waiting for GPS); the position is filled in when it arrives. */
@@ -34,6 +35,7 @@ export async function addSighting(input: NewSighting): Promise<Sighting> {
     count: input.count,
     detection: input.detection ?? 'seen',
     note: input.note,
+    unusualHere: input.unusualHere,
     mediaIds: [],
     idHistory: input.speciesCode ? [{ at: iso, speciesCode: input.speciesCode, source: 'me' }] : []
   };

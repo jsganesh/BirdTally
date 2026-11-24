@@ -76,6 +76,16 @@ export function outingLocation(outing: Outing, sightings: Sighting[]): GeoPoint 
     .sort((a, b) => a.observedAt.localeCompare(b.observedAt))[0]?.position;
 }
 
+/** Species recorded as unusual here where no entry has a note or media to back it up. */
+function unusualWithoutEvidence(lines: ChecklistLine[], mine: Sighting[]): string[] {
+  return lines
+    .filter((l) => {
+      const own = mine.filter((s) => s.speciesCode === l.speciesCode);
+      return own.some((s) => s.unusualHere) && !own.some((s) => s.note || s.mediaIds.length);
+    })
+    .map((l) => l.taxon?.en ?? l.speciesCode);
+}
+
 /** Validate an outing as an eBird checklist. Errors block export; warnings need a look. */
 export function validateChecklist(outing: Outing, sightings: Sighting[], taxa: Map<string, Taxon>): Issue[] {
   const issues: Issue[] = [];
@@ -106,6 +116,8 @@ export function validateChecklist(outing: Outing, sightings: Sighting[], taxa: M
       warn(`${l.taxon?.en ?? l.speciesCode}: ${l.sightingIds.length} entries. Count set to the largest single count (${l.count}). If they were different birds, set the total.`, `count:${l.speciesCode}`);
     if (typeof l.count === 'number' && (l.count < 1 || l.count > 999999 || !Number.isInteger(l.count))) err(`${l.taxon?.en ?? l.speciesCode}: count must be a whole number from 1 to 999999, or X.`);
   }
+  for (const name of unusualWithoutEvidence(lines, mine))
+    warn(`${name} was recorded as unusual here. eBird reviewers usually ask for a description or photo: add a description to the entry's note (it goes to eBird as the species comment).`);
   if (mine.some((s) => s.possibleCaptive)) warn('Some entries are marked as possibly captive or escaped. eBird asks you not to report captive birds.');
   if (mine.some((s) => s.tz !== outing.tz)) warn('Time zone changed during this birding session. Check the date and start time.');
 

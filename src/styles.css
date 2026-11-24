@@ -231,6 +231,7 @@ a { color: var(--accent); }
 .result:last-child { border-bottom: 0; }
 .result:focus, .result:hover, .result.sel { background: var(--accent-soft); }
 .result .name { font-weight: 700; font-size: 1.05rem; }
+.result.unusual { opacity: 0.65; }
 .result .meta { font-size: 0.8rem; color: var(--muted); }
 .has-addbar { padding-bottom: 96px; }
 

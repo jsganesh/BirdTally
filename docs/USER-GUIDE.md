@@ -7,7 +7,8 @@
 3. Check that the **Offline check** shows ✓ for *Species names* and *App saved for offline use*.
 4. Optional:
    - Under **2 · Trip**, create a trip (for example "Borneo 2027", with countries `MY,ID`) so new entries are tagged with it.
-   - If you have your own eBird API key, download the trip's regional species list. Those species then appear as one-tap buttons.
+   - Give the trip a region code: a country (`NZ`) or an area in it (`NZ-AUK` for Auckland; the code is in the address of any eBird region page).
+   - Optional: follow the numbered steps under **Warn about unusual birds** to get your own free eBird key and download the trip's species lists. Those species then appear as one-tap buttons, and a bird that has never been reported in the region asks **Record anyway?** before it is saved. A bird you record anyway is marked unusual, and the checklist review reminds you to add a description in its note or a photo, because eBird reviewers ask for them. Everything works offline once the lists are downloaded.
 
 ## In the field
 

@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { isAmbiguous, searchTaxa } from '../core/taxonomy';
 import { useTaxonomy, useSettings } from './hooks';
 import { displayNames } from '../core/taxonomy';
+import { useRegion } from './useRegion';
 
 /**
  * The always-visible "add a bird" field. Tap → type 2–3 letters → tap a result = saved.
@@ -10,6 +11,7 @@ import { displayNames } from '../core/taxonomy';
 export function AddBar({ recent, regional, onPick }: { recent: string[]; regional?: string[]; onPick: (code: string) => void }) {
   const { index, info } = useTaxonomy();
   const settings = useSettings();
+  const region = useRegion();
   const [q, setQ] = useState('');
   const [sel, setSel] = useState(0);
   const [chose, setChose] = useState(false); // used the arrow keys: Enter then means that row
@@ -49,12 +51,12 @@ export function AddBar({ recent, regional, onPick }: { recent: string[]; regiona
                   key={h.taxon.code}
                   role="option"
                   aria-selected={i === sel && !unsure}
-                  className={`result ${i === sel && !unsure ? 'sel' : ''}`}
+                  className={`result ${i === sel && !unsure ? 'sel' : ''} ${region.unusual(h.taxon.code) ? 'unusual' : ''}`}
                   onClick={() => pick(h.taxon.code)}
                 >
                   <span className="name">{h.taxon.en}</span>
                   <span className="meta">
-                    {[alt, h.taxon.sci, h.taxon.category !== 'species' ? h.taxon.category : ''].filter(Boolean).join(' · ')}
+                    {[region.unusual(h.taxon.code) ? 'unusual here' : '', alt, h.taxon.sci, h.taxon.category !== 'species' ? h.taxon.category : ''].filter(Boolean).join(' · ')}
                   </span>
                 </button>
               );
