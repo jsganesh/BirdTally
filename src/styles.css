@@ -275,7 +275,7 @@ a { color: var(--accent); }
   padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
   display: flex; flex-direction: column; gap: 14px;
 }
-.sheet-head { display: flex; align-items: center; gap: 10px; }
+.sheet-head { display: flex; align-items: center; gap: 10px; position: sticky; top: -16px; z-index: 1; margin: -16px -16px 0; padding: 16px; background: var(--bg); }
 
 /* Forms */
 label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 0.9rem; }

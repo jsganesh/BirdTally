@@ -30,3 +30,48 @@ export class VoiceRecorder {
     });
   }
 }
+
+export interface Recorder {
+  start(): Promise<void>;
+  stop(): Promise<{ blob: Blob; seconds: number }>;
+}
+
+/**
+ * One voice note at a time. finish() saves a note still running when its screen closes, so leaving
+ * mid-recording keeps what was said and releases the microphone instead of dropping both.
+ */
+export class VoiceNotes {
+  private active?: Recorder;
+  private busy = false;
+
+  constructor(
+    private save: (blob: Blob, seconds: number) => Promise<void>,
+    private make: () => Recorder = () => new VoiceRecorder()
+  ) {}
+
+  get recording() {
+    return !!this.active;
+  }
+
+  /** Start a note, or stop and save the running one. A failed start (no microphone) throws. */
+  async toggle() {
+    if (this.busy) return; // a second tap while the microphone is still opening
+    if (this.active) return this.finish();
+    this.busy = true;
+    try {
+      const r = this.make();
+      await r.start();
+      this.active = r;
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  async finish() {
+    const r = this.active;
+    if (!r) return;
+    this.active = undefined;
+    const { blob, seconds } = await r.stop();
+    await this.save(blob, seconds);
+  }
+}

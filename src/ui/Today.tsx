@@ -5,9 +5,9 @@ import { db } from '../db';
 import { addMedia, addSighting, deleteSighting, startOuting, stopOuting } from '../store';
 import { AddBar } from './AddBar';
 import { useNames, useSettings, useTaxonomy } from './hooks';
-import { VoiceRecorder } from './recorder';
 import { SightingSheet } from './SightingSheet';
 import { capturePhoto, timeOf } from './util';
+import { useVoiceNote } from './useVoiceNote';
 
 interface ToastState {
   id: string;
@@ -20,8 +20,6 @@ export function Today({ go }: { go: (tab: string) => void }) {
   const { info } = useTaxonomy();
   const [toast, setToast] = useState<ToastState>();
   const [open, setOpen] = useState<string>();
-  const [recorder, setRecorder] = useState<VoiceRecorder>();
-  const [recSecs, setRecSecs] = useState(0);
 
   const activeOuting = useLiveQuery(() => (settings?.activeOutingId ? db.outings.get(settings.activeOutingId) : undefined), [settings?.activeOutingId]);
   const recentRows = useLiveQuery(() => db.sightings.orderBy('observedAt').reverse().limit(400).toArray(), []);
@@ -56,11 +54,6 @@ export function Today({ go }: { go: (tab: string) => void }) {
     const t = setTimeout(() => setToast(undefined), 5000);
     return () => clearTimeout(t);
   }, [toast]);
-  useEffect(() => {
-    if (!recorder) return;
-    const t = setInterval(() => setRecSecs((x) => x + 1), 1000);
-    return () => clearInterval(t);
-  }, [recorder]);
 
   const add = async (code: string) => {
     const s = await addSighting({ speciesCode: code });
@@ -68,24 +61,11 @@ export function Today({ go }: { go: (tab: string) => void }) {
     setToast({ id: s.id, text: `${names.name(code)} saved · ${timeOf(s.observedAt, s.utcOffsetMin)}` });
   };
 
-  const voice = async () => {
-    if (recorder) {
-      const { blob, seconds } = await recorder.stop();
-      setRecorder(undefined);
-      const s = await addSighting({});
-      await addMedia(s.id, blob, 'audio', seconds);
-      setToast({ id: s.id, text: `Voice note saved (${seconds}s) · identification pending` });
-      return;
-    }
-    const r = new VoiceRecorder();
-    try {
-      await r.start();
-      setRecSecs(0);
-      setRecorder(r);
-    } catch {
-      alert('Microphone permission is needed to record a voice note.');
-    }
-  };
+  const voice = useVoiceNote(async (blob, seconds) => {
+    const s = await addSighting({});
+    await addMedia(s.id, blob, 'audio', seconds);
+    setToast({ id: s.id, text: `Voice note saved (${seconds}s) · identification pending` });
+  });
 
   const photo = async () => {
     const f = await capturePhoto();
@@ -144,9 +124,9 @@ export function Today({ go }: { go: (tab: string) => void }) {
       </div>
 
       <div className="btn-row">
-        <button className="btn" onClick={voice} aria-pressed={!!recorder} style={recorder ? { borderColor: 'var(--error)', color: 'var(--error)' } : undefined}>
-          <span className="ico">{recorder ? '■' : '🎙'}</span>
-          {recorder ? `Stop ${recSecs}s` : 'Voice note'}
+        <button className="btn" onClick={voice.toggle} aria-pressed={voice.recording} style={voice.recording ? { borderColor: 'var(--error)', color: 'var(--error)' } : undefined}>
+          <span className="ico">{voice.recording ? '■' : '🎙'}</span>
+          {voice.recording ? `Stop ${voice.secs}s` : 'Voice note'}
         </button>
         <button className="btn" onClick={photo}>
           <span className="ico">📷</span>Photo
