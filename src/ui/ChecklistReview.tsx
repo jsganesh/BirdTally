@@ -4,6 +4,7 @@ import { formatDistance, KM_PER_MILE, localDateKey, spanKm } from '../core/geoti
 import type { Outing, Protocol, Sighting, SubmissionState } from '../core/types';
 import { mergeOutings, splitOutingAt, updateOuting, updateSighting } from '../store';
 import { DeleteChecklist } from './DeleteChecklist';
+import { DeletedCleaner } from './DeletedCleaner';
 import { DraftField } from './DraftField';
 import { EntrySheet } from './ExportPanel';
 import { useNames, useSettings, useTaxonomy } from './hooks';
@@ -258,6 +259,7 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
             </div>
           </>
         )}
+        {o.submission === 'submitted' && <DeletedCleaner nudge />}
         <EntrySheet outing={o} sightings={sightings} />
       </section>
       <button className="btn danger" onClick={() => setDeleting(true)}>Delete checklist…</button>

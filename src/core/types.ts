@@ -60,6 +60,8 @@ export interface Sighting extends RecordMeta {
   possibleCaptive?: boolean;
   /** Recorded after a warning that the bird is not on the trip's regional species lists. */
   unusualHere?: boolean;
+  /** Deleted, and its details and media permanently removed. Only the "deleted" mark is kept, for merging. */
+  cleared?: boolean;
   mediaIds: ID[];
   idHistory: IdDecision[];
 }

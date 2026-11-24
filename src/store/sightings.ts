@@ -1,3 +1,4 @@
+import { clearable, stripSighting } from '../core/clearing';
 import { currentOffsetMin, currentZone } from '../core/geotime';
 import { newMeta, touch } from '../core/records';
 import type { CountMode, Detection, ID, MediaMeta, Sighting } from '../core/types';
@@ -87,6 +88,23 @@ export async function deleteSighting(id: ID) {
 
 export async function restoreSighting(id: ID) {
   await updateSighting(id, { deleted: false });
+}
+
+/**
+ * Permanently remove the details and the photo and voice-note files of deleted entries deleted at least `minAgeDays` ago.
+ * The media rows stay (small) so a file that still lists them cannot add the files back. One transaction.
+ */
+export async function clearDeleted(minAgeDays = 0): Promise<{ entries: number; bytes: number }> {
+  const { deviceId } = await getSettings();
+  return db.transaction('rw', db.sightings, db.media, db.mediaBlobs, async () => {
+    const now = Date.now();
+    const rows = await db.sightings.filter((s) => clearable(s, now, minAgeDays)).toArray();
+    const mediaIds = rows.flatMap((s) => s.mediaIds);
+    const metas = (await db.media.bulkGet(mediaIds)).filter((m): m is MediaMeta => !!m);
+    await db.mediaBlobs.bulkDelete(mediaIds);
+    await db.sightings.bulkPut(rows.map((s) => touch(stripSighting(s), {}, deviceId)));
+    return { entries: rows.length, bytes: metas.reduce((sum, m) => sum + m.bytes, 0) };
+  });
 }
 
 // ---------- media (voice notes, phone photos) ----------

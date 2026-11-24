@@ -5,6 +5,7 @@ import { normalize } from '../core/taxonomy';
 import type { Sighting } from '../core/types';
 import { db } from '../db';
 import { restoreSighting } from '../store';
+import { DeletedCleaner } from './DeletedCleaner';
 import { useNames, useTaxonomy } from './hooks';
 import { SightingSheet } from './SightingSheet';
 import { dayLabel, timeOf } from './util';
@@ -28,6 +29,7 @@ export function Notebook() {
     const nq = normalize(q);
     return (all ?? []).filter((s) => {
       if (filter === 'deleted' ? !s.deleted : s.deleted) return false;
+      if (s.cleared) return false; // nothing left to show or restore
       if (filter === 'pending' && s.speciesCode) return false;
       if (!nq) return true;
       const t = s.speciesCode ? taxa.get(s.speciesCode) : undefined;
@@ -80,6 +82,7 @@ export function Notebook() {
           </button>
         ))}
       </div>
+      {filter === 'deleted' && <DeletedCleaner />}
       <div className="muted small">
         {rows.length} entries · {speciesCount} species
       </div>

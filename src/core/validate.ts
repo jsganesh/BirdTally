@@ -68,6 +68,7 @@ const SIGHTING: Spec = {
   merlinSuggestion: optional(str),
   possibleCaptive: optional(bool),
   unusualHere: optional(bool),
+  cleared: optional(bool),
   mediaIds: listOf(id),
   idHistory: listOf(shape({ at: iso, speciesCode: optional(str), source: oneOf('me', 'merlin-noted'), note: optional(str) }))
 };

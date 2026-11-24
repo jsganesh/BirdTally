@@ -16,6 +16,7 @@ An offline field notebook for bird photographers. You log birds in a few taps wi
 | Checklist review: protocol, the completeness question, count overrides, split and merge, validation | |
 | eBird Record Format CSV export with a preview, ≤ 1 MB files, an export history and a duplicate-file warning | |
 | Submission tracking: Ready → Exported → Submitted (with the S-number), plus an edited-after-export warning | |
+| Deleted entries stay restorable until you choose to clear them (all, or over 30 days old) for good: details and media are removed, a blank "deleted" mark is kept so merges and old backups cannot bring them back | |
 | Searchable notebook/archive; backup and trip files merged across devices, with conflicts kept for review | |
 | Dark, light ("bright sun") and automatic themes; km or miles | |
 | Optional unusual-bird warning: with your own eBird API key and a trip region code (NZ or NZ-AUK, chosen from eBird's country and area lists or typed), a bird never reported in the region asks "Record anyway?", is flagged, and reminds you at review to add a description or photo. Works offline once the lists are downloaded | GPS cross-check: a notice on Today and in checklist review when a GPS fix is outside every region of the trip, using each region's bounding box downloaded with its list, so it works offline ([design](docs/superpowers/specs/2026-11-24-gps-cross-check-design.md)) | Exact region borders: a bounding box is a rectangle, so it catches the wrong country or a distant region, not a neighbouring one |

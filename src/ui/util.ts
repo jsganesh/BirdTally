@@ -71,3 +71,9 @@ export function parseChecklistId(input: string): string | undefined {
   const m = input.trim().match(/\b(S\d{5,})\b/);
   return m?.[1];
 }
+
+/** "1.4 MB" or "230 KB": sizes in plain words. */
+export function formatBytes(bytes: number): string {
+  if (bytes >= 1e6) return `${(bytes / 1e6).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1e3))} KB`;
+}

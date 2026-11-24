@@ -23,11 +23,14 @@
 | Change a count, mark heard-only, add a note | **Details** on the confirmation bar, or tap the entry |
 | Fix a mistake straight away | **Undo** on the confirmation bar |
 | Delete a wrong bird | tap the entry, then **Delete** at the top of its sheet. The sheet then offers **Restore** |
+| Free space taken by deleted birds | **Notebook → Deleted → Clear all deleted…**, or only those deleted over 30 days ago. This is permanent |
 | Delete a checklist | **Checklists** → open it → **Delete checklist…**. An empty draft has a **Delete** button in the list |
 
 A voice note you are still recording when you leave the screen or close the sheet is saved, not dropped.
 
-Deleting a checklist asks what happens to its birds. By default they stay in the Notebook (and may reappear under **Suggested birding sessions**). You can also tick the birds to delete with it; those move to **Notebook → Deleted**, where **Restore** brings them back. Nothing is erased for good, and a checklist already exported to eBird is not removed from eBird.
+Deleting a checklist asks what happens to its birds. By default they stay in the Notebook (and may reappear under **Suggested birding sessions**). You can also tick the birds to delete with it; those move to **Notebook → Deleted**, where **Restore** brings them back. Nothing is erased for good until you clear it (see below), and a checklist already exported to eBird is not removed from eBird.
+
+Deleted birds stay in **Notebook → Deleted** so you can restore them, and so a delete reaches your other phone. They never go to eBird, but their photos and voice notes still take space. **Clear all deleted…** (or **Clear those over 30 days old…**) removes their species, notes, GPS positions, photos and voice notes for good; it tells you how many entries and how much space first, and it cannot be undone. Only a blank "deleted" mark is kept, so an older backup or your other phone cannot bring the bird back. Backup files you saved earlier still hold the original details. After you confirm a checklist as submitted, the checklist reminds you if there are deleted entries to clear. Nothing is ever cleared automatically.
 
 Every entry is saved immediately, with its time and one GPS position. The count starts as **present (X)**; switch it to **About** or **Exactly** only if you want a number.
 
