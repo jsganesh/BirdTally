@@ -38,12 +38,13 @@ export function ExportPanel({ outings, sightings, onBack }: { outings: Outing[];
   const ready = outings.filter((o) => o.submission === 'ready');
   const [selected, setSelected] = useState<string[]>(ready.map((o) => o.id));
   const [done, setDone] = useState<CsvFile[]>();
+  const [error, setError] = useState<string>();
   const chosen = ready.filter((o) => selected.includes(o.id));
   const rows = chosen.flatMap((o) => outingRows(o, sightings, taxa, settings?.defaultObservers ?? 1));
   const blocked = chosen.some((o) => hasErrors(validateChecklist(o, sightings, taxa)));
   const history = useLiveQuery(() => db.exports.orderBy('createdAt').reverse().limit(20).toArray(), []) ?? [];
 
-  const doExport = async () => {
+  const exportFiles = async () => {
     const files = toCsvFiles(rows, `birdtally-ebird-${stamp()}`);
     for (const f of files) {
       const hash = await sha256(f.text);
@@ -55,6 +56,16 @@ export function ExportPanel({ outings, sightings, onBack }: { outings: Outing[];
       for (const v of versions) await updateOuting(v.outingId, { submission: 'exported', exportedVersion: v.version }, false);
     }
     setDone(files);
+  };
+
+  // A file over eBird's 1 MB limit or a failed save must say so; a cancelled share sheet is not an error.
+  const doExport = async () => {
+    setError(undefined);
+    try {
+      await exportFiles();
+    } catch (e) {
+      if ((e as Error).name !== 'AbortError') setError(`Could not make the eBird file: ${(e as Error).message}`);
+    }
   };
 
   return (
@@ -120,6 +131,7 @@ export function ExportPanel({ outings, sightings, onBack }: { outings: Outing[];
             </table>
           </div>
           <div className="muted small">The column names above are for your reference only; the file has no header row.</div>
+          {error && <div className="issue error" role="alert">{error}</div>}
           <button className="btn primary big" disabled={!rows.length || blocked} onClick={doExport}>
             {blocked ? 'A selected checklist has errors' : `Save eBird file (${chosen.length} checklist${chosen.length === 1 ? '' : 's'})`}
           </button>

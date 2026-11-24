@@ -1,9 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { searchTaxa } from '../core/taxonomy';
 import type { CountMode, Detection, Sighting } from '../core/types';
 import { db } from '../db';
 import { addMedia, deleteSighting, restoreSighting, updateSighting } from '../store';
+import { Dialog } from './Dialog';
 import { DraftField } from './DraftField';
 import { useNames, useTaxonomy } from './hooks';
 import { VoiceRecorder } from './recorder';
@@ -23,16 +24,6 @@ function MediaView({ id }: { id: string }) {
   return rec[0].kind === 'audio' ? <audio controls src={url} /> : <img src={url} alt="Field photo" />;
 }
 
-function Sheet({ onClose, children }: { onClose: () => void; children: ReactNode }) {
-  return (
-    <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-label="Edit sighting" onClick={(e) => e.stopPropagation()}>
-        {children}
-      </div>
-    </div>
-  );
-}
-
 export function SightingSheet({ id, onClose }: { id: string; onClose: () => void }) {
   const s = useLiveQuery(() => db.sightings.get(id), [id]);
   const names = useNames();
@@ -44,12 +35,6 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
   });
   const hits = useMemo(() => (q.trim() ? searchTaxa(index, q, { limit: 8 }) : []), [q, index]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
   if (!s) return null;
   const set = (c: Partial<Sighting>) => updateSighting(s.id, c);
   const pending = !s.speciesCode;
@@ -57,18 +42,18 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
   // A deleted entry offers only Restore, so it can't be deleted twice or edited unseen.
   if (s.deleted)
     return (
-      <Sheet onClose={onClose}>
+      <Dialog label="Edit sighting" onClose={onClose}>
         <div className="sheet-head">
           <h2 className="grow">{names.name(s.speciesCode)}</h2>
           <button className="btn small" onClick={onClose}>Close</button>
         </div>
         <div className="issue warning">This entry is deleted. It is out of your lists and eBird exports.</div>
         <button className="btn primary" onClick={() => restoreSighting(s.id)}>Restore</button>
-      </Sheet>
+      </Dialog>
     );
 
   return (
-    <Sheet onClose={onClose}>
+    <Dialog label="Edit sighting" onClose={onClose}>
       <div className="sheet-head">
         <div className="grow">
           <h2 style={{ color: pending ? 'var(--pending)' : undefined }}>{names.name(s.speciesCode)}</h2>
@@ -212,6 +197,6 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
           </ul>
         </details>
       )}
-    </Sheet>
+    </Dialog>
   );
 }

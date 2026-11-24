@@ -120,7 +120,7 @@ export function Setup() {
             ))}
           </div>
           <div className="row">
-            <input className="text grow" placeholder="Other eBird locale code, e.g. ko" value={extra} onChange={(e) => setExtra(e.target.value.trim())} />
+            <input className="text grow" aria-label="Other eBird locale code" placeholder="Other eBird locale code, e.g. ko" value={extra} onChange={(e) => setExtra(e.target.value.trim())} />
             <button className="btn small" disabled={!extra} onClick={() => (setLocales([...new Set([...locales, extra])]), setExtra(''))}>
               Add
             </button>
@@ -129,7 +129,7 @@ export function Setup() {
         <button className="btn primary big" disabled={busy || !online} onClick={download}>
           {busy ? 'Downloading…' : online ? (info ? 'Update species names' : 'Download species names') : 'Connect to the internet to download'}
         </button>
-        {progress && <div className="small">{progress}</div>}
+        {progress && <div className="small" role="status">{progress}</div>}
 
         <div className="stack" aria-label="Offline readiness">
           <div style={{ fontWeight: 800 }}>Offline check</div>
@@ -162,8 +162,8 @@ export function Setup() {
           </label>
         )}
         <div className="row wrap">
-          <input className="text grow" placeholder="New trip name, e.g. Borneo 2027" value={tripName} onChange={(e) => setTripName(e.target.value)} />
-          <input className="text" style={{ width: 150 }} placeholder="Countries: MY,ID" value={tripCountries} onChange={(e) => setTripCountries(e.target.value)} />
+          <input className="text" style={{ flex: '1 1 100%' }} aria-label="New trip name" placeholder="New trip name, e.g. Borneo 2027" value={tripName} onChange={(e) => setTripName(e.target.value)} />
+          <input className="text grow" aria-label="Trip country codes" placeholder="Countries: MY,ID" value={tripCountries} onChange={(e) => setTripCountries(e.target.value)} />
           <button
             className="btn small"
             disabled={!tripName.trim()}
@@ -223,7 +223,7 @@ export function Setup() {
           <button className="btn primary" onClick={() => backup('backup')}>Save backup file</button>
           <button className="btn" onClick={doImport}>Import / merge a file</button>
         </div>
-        {importMsg && <div className="small">{importMsg}</div>}
+        {importMsg && <div className="small" role="status">{importMsg}</div>}
         <Conflicts />
       </section>
 
