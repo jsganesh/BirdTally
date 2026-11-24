@@ -21,6 +21,9 @@
 | Note a bird you couldn't identify | **Unknown bird**, then add a note |
 | Change a count, mark heard-only, add a note | **Details** on the confirmation bar, or tap the entry |
 | Fix a mistake straight away | **Undo** on the confirmation bar |
+| Delete a checklist | **Checklists** → open it → **Delete checklist…**. An empty draft has a **Delete** button in the list |
+
+Deleting a checklist asks what happens to its birds. By default they stay in the Notebook (and may reappear under **Suggested birding sessions**). You can also tick the birds to delete with it; those move to **Notebook → Deleted**, where **Restore** brings them back. Nothing is erased for good, and a checklist already exported to eBird is not removed from eBird.
 
 Every entry is saved immediately, with its time and one GPS position. The count starts as **present (X)**; switch it to **About** or **Exactly** only if you want a number.
 

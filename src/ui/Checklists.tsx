@@ -6,6 +6,7 @@ import type { Outing } from '../core/types';
 import { db } from '../db';
 import { confirmProposal } from '../store';
 import { Review, STATE_LABEL } from './ChecklistReview';
+import { DeleteChecklist } from './DeleteChecklist';
 import { ExportPanel } from './ExportPanel';
 import { useSettings, useTaxonomy } from './hooks';
 import { dayLabel, timeOf } from './util';
@@ -17,8 +18,10 @@ export function Checklists() {
   const { taxa } = useTaxonomy();
   const [openId, setOpenId] = useState<string>();
   const [exporting, setExporting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string>();
   const proposals = useMemo(() => proposeOutings(sightings.filter((s) => !s.deleted && !(s.outingId && s.outingId === settings?.activeOutingId))), [sightings, settings?.activeOutingId]);
   const live = sightings.filter((s) => !s.deleted);
+  const deleting = outings.find((o) => o.id === deletingId);
 
   if (openId) {
     const o = outings.find((x) => x.id === openId);
@@ -91,26 +94,34 @@ export function Checklists() {
                 const issues = validateChecklist(o, live, taxa);
                 const errors = issues.filter((i) => i.severity === 'error').length;
                 return (
-                  <button key={o.id} className="item" onClick={() => setOpenId(o.id)}>
-                    <span className="grow">
-                      <span className="title">
-                        {o.locationName || 'Unnamed location'} · {dayLabel(o.startedAt, o.utcOffsetMin)}
+                  <div key={o.id} className="row" style={{ borderBottom: '1px solid var(--line)' }}>
+                    <button className="item" style={{ borderBottom: 0 }} onClick={() => setOpenId(o.id)}>
+                      <span className="grow">
+                        <span className="title">
+                          {o.locationName || 'Unnamed location'} · {dayLabel(o.startedAt, o.utcOffsetMin)}
+                        </span>
+                        <span className="sub" style={{ display: 'block' }}>
+                          {timeOf(o.startedAt, o.utcOffsetMin)} · {nSpecies} species · {o.protocol ?? 'no protocol'}
+                          {o.ebirdChecklistId ? ` · ${o.ebirdChecklistId}` : ''}
+                          {o.id === settings?.activeOutingId ? ' · birding mode on' : ''}
+                          {errors ? ` · ${errors} to fix` : ''}
+                        </span>
                       </span>
-                      <span className="sub" style={{ display: 'block' }}>
-                        {timeOf(o.startedAt, o.utcOffsetMin)} · {nSpecies} species · {o.protocol ?? 'no protocol'}
-                        {o.ebirdChecklistId ? ` · ${o.ebirdChecklistId}` : ''}
-                        {o.id === settings?.activeOutingId ? ' · birding mode on' : ''}
-                        {errors ? ` · ${errors} to fix` : ''}
-                      </span>
-                    </span>
-                    <span className={`pill state-${o.submission}`}>{STATE_LABEL[o.submission].split(' —')[0]}</span>
-                  </button>
+                      <span className={`pill state-${o.submission}`}>{STATE_LABEL[o.submission].split(' —')[0]}</span>
+                    </button>
+                    {mine.length === 0 && (
+                      <button className="btn small danger" style={{ marginRight: 10 }} onClick={() => setDeletingId(o.id)}>
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
           </section>
         )
       )}
+      {deleting && <DeleteChecklist outing={deleting} birds={[]} active={deleting.id === settings?.activeOutingId} onClose={() => setDeletingId(undefined)} onDeleted={() => setDeletingId(undefined)} />}
     </div>
   );
 }

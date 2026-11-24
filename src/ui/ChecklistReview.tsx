@@ -3,6 +3,7 @@ import { buildLines, hasErrors, outingLocation, outingPoints, validateChecklist 
 import { formatDistance, KM_PER_MILE, localDateKey, spanKm } from '../core/geotime';
 import type { Outing, Protocol, Sighting, SubmissionState } from '../core/types';
 import { mergeOutings, splitOutingAt, updateOuting, updateSighting } from '../store';
+import { DeleteChecklist } from './DeleteChecklist';
 import { DraftField } from './DraftField';
 import { EntrySheet } from './ExportPanel';
 import { useNames, useSettings, useTaxonomy } from './hooks';
@@ -22,6 +23,7 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
   const names = useNames();
   const settings = useSettings();
   const [open, setOpen] = useState<string>();
+  const [deleting, setDeleting] = useState(false);
   const [subInput, setSubInput] = useState('');
   const units = settings?.units ?? 'km';
   const mine = sightings.filter((s) => s.outingId === o.id).sort((a, b) => a.observedAt.localeCompare(b.observedAt));
@@ -185,8 +187,8 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
                     Split
                   </button>
                 )}
-                <button className="btn small" style={{ marginRight: 10, padding: '0 12px' }} aria-label="Remove this entry from the birding session" title="Take this entry out of the birding session (it stays in your notebook)" onClick={() => updateSighting(s.id, { outingId: null })}>
-                  ✕
+                <button className="btn small" style={{ marginRight: 10, padding: '0 10px' }} aria-label="Remove this entry from the birding session" title="Take this entry out of the birding session (it stays in your notebook)" onClick={() => updateSighting(s.id, { outingId: null })}>
+                  Remove
                 </button>
               </div>
             ))}
@@ -255,7 +257,9 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
         )}
         <EntrySheet outing={o} sightings={sightings} />
       </section>
+      <button className="btn danger" onClick={() => setDeleting(true)}>Delete checklist…</button>
       {open && <SightingSheet id={open} onClose={() => setOpen(undefined)} />}
+      {deleting && <DeleteChecklist outing={o} birds={mine} active={o.id === settings?.activeOutingId} onClose={() => setDeleting(false)} onDeleted={onBack} />}
     </div>
   );
 }

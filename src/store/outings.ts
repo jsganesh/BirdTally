@@ -137,6 +137,23 @@ export async function splitOutingAt(outingId: ID, sightingId: ID) {
   });
 }
 
+/**
+ * Delete a checklist. Its birds stay in the notebook, unassigned, except `deleteBirdIds`, which go to the
+ * Deleted list (restorable). Birds restore unassigned, so a deleted checklist is never referenced again.
+ */
+export async function deleteOuting(id: ID, deleteBirdIds: ID[] = []) {
+  const { deviceId } = await getSettings();
+  const gone = new Set(deleteBirdIds);
+  await db.transaction('rw', db.outings, db.sightings, db.settings, async () => {
+    const o = await db.outings.get(id);
+    if (!o || o.deleted) return;
+    for (const s of await db.sightings.where('outingId').equals(id).toArray())
+      await db.sightings.put(touch(s, { outingId: null, ...(gone.has(s.id) && { deleted: true }) }, deviceId));
+    await db.outings.put(touch(o, { deleted: true }, deviceId));
+    if ((await db.settings.get('main'))?.activeOutingId === id) await db.settings.update('main', { activeOutingId: undefined });
+  });
+}
+
 /** Merge outing b into a (same date required by the caller's UI). */
 export async function mergeOutings(aId: ID, bId: ID) {
   const { deviceId } = await getSettings();
