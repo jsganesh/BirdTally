@@ -164,7 +164,8 @@ describe('a morning of birding, recorded offline', () => {
 
 describe('two phones on one trip', () => {
   it('merges a trip file from the other phone, keeping both versions of a clash', async () => {
-    const mine = await buildBackup('trip');
+    // This data has no trip, so the other phone's file is a backup; a trip file needs a trip (tests/trip-file.test.ts).
+    const mine = await buildBackup('backup');
     // Phone B started from the same data, then: edited one sighting and logged a new bird.
     const shared = mine.sightings.find((s) => s.speciesCode === 'kea1')!;
     const editedOnB = touch(shared, { countMode: 'exact', count: 2 } as Partial<Sighting>, 'phoneB', '2026-11-21T02:00:00.000Z');

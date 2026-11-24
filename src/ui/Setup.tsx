@@ -216,11 +216,15 @@ export function Setup() {
           Everything is stored only on this device. A backup is one open JSON file (entries, outings, voice notes and photos). Use “Import” on another device —
           for example your Mac or second phone — to merge it; nothing is overwritten silently.
         </p>
+        <p className="muted small" style={{ margin: 0 }}>
+          A backup holds every entry with its exact GPS position, notes, voice notes and photos: keep it private. A trip file holds only the active trip, for sharing with someone on the same trip.
+        </p>
         <div className="muted small">
           Last backup: {settings.lastBackupAt ? new Date(settings.lastBackupAt).toLocaleString() : 'never'} · {settings.entriesSinceBackup} entries since
         </div>
         <div className="row wrap">
           <button className="btn primary" onClick={() => backup('backup')}>Save backup file</button>
+          {settings.activeTripId && <button className="btn" onClick={() => backup('trip')}>Save trip file</button>}
           <button className="btn" onClick={doImport}>Import / merge a file</button>
         </div>
         {importMsg && <div className="small" role="status">{importMsg}</div>}

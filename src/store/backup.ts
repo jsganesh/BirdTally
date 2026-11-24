@@ -1,6 +1,6 @@
 import { BACKUP_FORMAT, BACKUP_FORMAT_VERSION, conflictId, mergeRecords, type BirdTallyFile, type MediaWithData } from '../core/merge';
 import { validateFile } from '../core/validate';
-import type { Conflict, Outing, Sighting, Trip } from '../core/types';
+import type { Conflict, ID, MediaMeta, Outing, Sighting, Trip } from '../core/types';
 import { db } from '../db';
 import { getSettings, updateSettings } from './settings';
 
@@ -20,14 +20,40 @@ function base64ToBlob(b64: string, mime: string): Blob {
   return new Blob([out], { type: mime });
 }
 
-export async function buildBackup(kind: 'backup' | 'trip' = 'backup'): Promise<BirdTallyFile> {
-  const st = await getSettings();
-  const tax = await db.taxonomy.get('current');
-  const media: MediaWithData[] = [];
-  for (const m of await db.media.toArray()) {
+/** Only what belongs to one trip, so a trip file never carries the rest of the notebook. */
+async function tripScope(tripId: ID) {
+  const sightings = await db.sightings.where('tripId').equals(tripId).toArray();
+  const ids = new Set(sightings.map((s) => s.id));
+  const outingIds = new Set(sightings.map((s) => s.outingId));
+  return {
+    trips: await db.trips.where('id').equals(tripId).toArray(),
+    outings: (await db.outings.toArray()).filter((o) => o.tripId === tripId || outingIds.has(o.id)),
+    sightings,
+    media: (await db.media.toArray()).filter((m) => ids.has(m.sightingId))
+  };
+}
+
+async function everything() {
+  return { trips: await db.trips.toArray(), outings: await db.outings.toArray(), sightings: await db.sightings.toArray(), media: await db.media.toArray() };
+}
+
+async function withData(metas: MediaMeta[]): Promise<MediaWithData[]> {
+  const out: MediaWithData[] = [];
+  for (const m of metas) {
     const b = await db.mediaBlobs.get(m.id);
-    if (b) media.push({ ...m, dataBase64: await blobToBase64(b.blob) });
+    if (b) out.push({ ...m, dataBase64: await blobToBase64(b.blob) });
   }
+  return out;
+}
+
+/** A backup holds everything. A trip file holds one trip (the active one unless told otherwise). */
+export async function buildBackup(kind: 'backup' | 'trip' = 'backup', tripId?: ID): Promise<BirdTallyFile> {
+  const st = await getSettings();
+  const trip = kind === 'trip' ? (tripId ?? st.activeTripId) : undefined;
+  if (kind === 'trip' && !trip) throw new Error('Choose a trip first.');
+  const data = trip ? await tripScope(trip) : await everything();
+  const recordIds = new Set([...data.trips, ...data.outings, ...data.sightings].map((r) => r.id));
+  const tax = await db.taxonomy.get('current');
   return {
     format: BACKUP_FORMAT,
     formatVersion: BACKUP_FORMAT_VERSION,
@@ -36,12 +62,12 @@ export async function buildBackup(kind: 'backup' | 'trip' = 'backup'): Promise<B
     deviceId: st.deviceId,
     deviceName: st.deviceName,
     taxonomyVersion: tax?.version,
-    trips: await db.trips.toArray(),
-    outings: await db.outings.toArray(),
-    sightings: await db.sightings.toArray(),
-    media,
-    exports: await db.exports.toArray(),
-    conflicts: await db.conflicts.toArray()
+    trips: data.trips,
+    outings: data.outings,
+    sightings: data.sightings,
+    media: await withData(data.media),
+    exports: trip ? [] : await db.exports.toArray(), // export history belongs to this phone, not to the trip
+    conflicts: (await db.conflicts.toArray()).filter((c) => !trip || recordIds.has(c.recordId))
   };
 }
 
