@@ -1,21 +1,28 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+BirdTally is one web app that is updated in place: <https://jsganesh.github.io/BirdTally/>. Only the latest
+published version is supported, and fixes go into that version. There are no older maintained branches.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+## Reporting a vulnerability
 
-## Reporting a Vulnerability
+Please report it privately, not in a public issue:
 
-Use this section to tell people how to report a vulnerability.
+1. Open <https://github.com/jsganesh/BirdTally/security/advisories/new> (the **Security** tab, then **Report a vulnerability**).
+2. Say what you found, how to reproduce it, and what it could let someone do.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+This is a small personal project, so there is no guaranteed response time. I will read every report, say whether I
+accept it, and credit you in the fix if you want that.
+
+Please do not include real eBird API keys, backup files or other people's data in a report. Describe the problem, or
+use made-up test data.
+
+## What the app handles
+
+- Everything you record is stored only on your own device (in the browser's local database). BirdTally has no server
+  and no accounts.
+- The app talks to one outside service, `api.ebird.org`, to download species names and, if you choose, species lists
+  for your trip. The optional eBird API key you enter stays on your device and is sent only to eBird. It is not
+  included in backup or trip files.
+- Backup files hold your entries with exact GPS positions, notes, photos and voice notes. Keep them private.
