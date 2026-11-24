@@ -15,6 +15,7 @@ export async function getSettings(): Promise<SettingsRow> {
     units: 'km',
     displayLocales: ['en'],
     defaultObservers: 1,
+    showHints: true,
     theme: 'auto',
     entriesSinceBackup: 0
   };

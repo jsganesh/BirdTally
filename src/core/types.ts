@@ -173,6 +173,8 @@ export interface Settings {
   units: 'km' | 'mi';
   displayLocales: string[]; // name languages to show, e.g. ['en', 'mi']
   defaultObservers: number;
+  /** Short hint lines under unclear buttons. Absent counts as on. */
+  showHints?: boolean;
   ebirdApiKey?: string;
   theme: 'auto' | 'light' | 'dark';
   lastBackupAt?: string;

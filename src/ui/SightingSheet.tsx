@@ -5,6 +5,7 @@ import type { CountMode, Detection, Sighting } from '../core/types';
 import { db } from '../db';
 import { addMedia, deleteSighting, restoreSighting, updateSighting } from '../store';
 import { Dialog } from './Dialog';
+import { Hint } from './Hint';
 import { DraftField } from './DraftField';
 import { useNames, useTaxonomy } from './hooks';
 import { VoiceRecorder } from './recorder';
@@ -111,9 +112,12 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
           {changing && <button className="btn small" onClick={() => setChanging(false)}>Cancel</button>}
         </div>
       ) : (
-        <div className="row wrap">
-          <button className="btn small" onClick={() => setChanging(true)}>Change species</button>
-          <button className="btn small" onClick={() => set({ speciesCode: undefined, unusualHere: undefined })}>Mark identification pending</button>
+        <div className="stack">
+          <div className="row wrap">
+            <button className="btn small" onClick={() => setChanging(true)}>Change species</button>
+            <button className="btn small" onClick={() => set({ speciesCode: undefined, unusualHere: undefined })}>Mark identification pending</button>
+          </div>
+          <Hint>Mark identification pending takes the species off this entry until you decide. It will be left out of checklists until then.</Hint>
         </div>
       )}
 
@@ -129,6 +133,7 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
             </button>
           ))}
         </div>
+        <Hint>Present (X) means seen but not counted. About is an estimate. Exactly is a number you counted.</Hint>
         {s.countMode !== 'present' && (
           <div className="stepper">
             <button aria-label="One fewer" onClick={() => set({ count: Math.max(1, (s.count ?? 1) - 1) })}>−</button>
@@ -166,6 +171,7 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
         <input type="checkbox" checked={!!s.possibleCaptive} onChange={(e) => set({ possibleCaptive: e.target.checked })} />
         Possibly captive or escaped
       </label>
+      <Hint>Adds a warning when you review the checklist, because eBird asks you not to report captive birds.</Hint>
 
       {s.mediaIds.length > 0 && (
         <div className="stack thumbs">

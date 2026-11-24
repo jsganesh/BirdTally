@@ -32,6 +32,8 @@ Deleting a checklist asks what happens to its birds. By default they stay in the
 
 Deleted birds stay in **Notebook → Deleted** so you can restore them, and so a delete reaches your other phone. They never go to eBird, but their photos and voice notes still take space. **Clear all deleted…** (or **Clear those over 30 days old…**) removes their species, notes, GPS positions, photos and voice notes for good; it tells you how many entries and how much space first, and it cannot be undone. Only a blank "deleted" mark is kept, so an older backup or your other phone cannot bring the bird back. Backup files you saved earlier still hold the original details. After you confirm a checklist as submitted, the checklist reminds you if there are deleted entries to clear. Nothing is ever cleared automatically.
 
+Short grey hint lines sit under buttons whose meaning is not obvious (Voice note, Mark identification pending, Split, Needs correction and so on). Once you know the app, turn them off under **Setup → Preferences → Show hints under buttons that need explaining**.
+
 Every entry is saved immediately, with its time and one GPS position. The count starts as **present (X)**; switch it to **About** or **Exactly** only if you want a number.
 
 ## Back at base

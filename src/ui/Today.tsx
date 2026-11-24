@@ -5,6 +5,7 @@ import { db } from '../db';
 import { addMedia, addSighting, deleteSighting, startOuting, stopOuting } from '../store';
 import { AddBar } from './AddBar';
 import { useNames, useSettings, useTaxonomy } from './hooks';
+import { Hint } from './Hint';
 import { RegionNotice } from './RegionNotice';
 import { UnusualSheet } from './UnusualSheet';
 import { useRegion } from './useRegion';
@@ -146,6 +147,8 @@ export function Today({ go }: { go: (tab: string) => void }) {
           <span className="ico">?</span>Unknown bird
         </button>
       </div>
+
+      <Hint>Voice note and Photo save now so you can name the bird later. Unknown bird saves an entry and opens it for a note.</Hint>
 
       {chips.length > 0 && (
         <section className="stack">

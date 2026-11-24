@@ -12,6 +12,7 @@ import {
   updateSettings,
   type ImportSummary
 } from '../store';
+import { hintsOn } from '../core/hints';
 import { addRegionCode } from '../core/region';
 import { useOnline, useSettings, useTaxonomy } from './hooks';
 import { Conflicts } from './Conflicts';
@@ -232,6 +233,10 @@ export function Setup() {
             ))}
           </div>
         </div>
+        <label className="check">
+          <input type="checkbox" checked={hintsOn(settings)} onChange={(e) => updateSettings({ showHints: e.target.checked })} />
+          Show hints under buttons that need explaining
+        </label>
         <label className="field">
           Default number of observers
           <DraftField inputMode="numeric" stored={String(settings.defaultObservers)} onSave={(v) => updateSettings({ defaultObservers: Math.max(1, parseInt(v, 10) || 1) })} />

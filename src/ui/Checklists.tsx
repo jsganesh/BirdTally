@@ -8,6 +8,7 @@ import { confirmProposal } from '../store';
 import { Review, STATE_LABEL } from './ChecklistReview';
 import { DeleteChecklist } from './DeleteChecklist';
 import { ExportPanel } from './ExportPanel';
+import { Hint } from './Hint';
 import { useSettings, useTaxonomy } from './hooks';
 import { dayLabel, timeOf } from './util';
 
@@ -44,6 +45,7 @@ export function Checklists() {
           Export for eBird
         </button>
       </div>
+      <Hint>Export saves a file for you to upload on ebird.org. BirdTally never sends anything to eBird itself.</Hint>
 
       {proposals.length > 0 && (
         <section className="stack">

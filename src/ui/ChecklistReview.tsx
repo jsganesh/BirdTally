@@ -5,6 +5,7 @@ import type { Outing, Protocol, Sighting, SubmissionState } from '../core/types'
 import { mergeOutings, splitOutingAt, updateOuting, updateSighting } from '../store';
 import { DeleteChecklist } from './DeleteChecklist';
 import { DeletedCleaner } from './DeletedCleaner';
+import { Hint } from './Hint';
 import { DraftField } from './DraftField';
 import { EntrySheet } from './ExportPanel';
 import { useNames, useSettings, useTaxonomy } from './hooks';
@@ -173,6 +174,7 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
           <div className="muted small">Type a number or X (present). Several entries of one species are not added up automatically — they may be the same bird.</div>
 
           <h2>Entries ({mine.length})</h2>
+          <Hint>Split starts a new checklist from that bird onward. Remove takes a bird out of this checklist; it stays in your Notebook.</Hint>
           <div className="list">
             {mine.map((s, i) => (
               <div key={s.id} className="row" style={{ borderBottom: '1px solid var(--line)' }}>
@@ -223,9 +225,12 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
       <section className="card stack">
         <h2>eBird status</h2>
         {o.submission === 'draft' || o.submission === 'needs_correction' ? (
-          <button className="btn primary" disabled={blocked} onClick={() => set({ submission: 'ready' }, false)}>
-            {blocked ? 'Fix the errors above first' : 'Mark ready for eBird'}
-          </button>
+          <>
+            <button className="btn primary" disabled={blocked} onClick={() => set({ submission: 'ready' }, false)}>
+              {blocked ? 'Fix the errors above first' : 'Mark ready for eBird'}
+            </button>
+            <Hint>Editing the checklist later sends it back to Draft. Nothing is sent to eBird from here.</Hint>
+          </>
         ) : o.submission === 'ready' ? (
           <div className="muted small">Ready. Use “Export for eBird” on the Checklists screen, or enter it by hand in eBird Mobile or ebird.org/submit.</div>
         ) : null}
@@ -257,6 +262,7 @@ export function Review({ outing: o, sightings, outings, onBack }: { outing: Outi
                 </button>
               )}
             </div>
+            <Hint>Needs correction is for when eBird rejected the file: the checklist goes back for editing.</Hint>
           </>
         )}
         {o.submission === 'submitted' && <DeletedCleaner nudge />}

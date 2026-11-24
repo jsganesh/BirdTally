@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { db } from './db';
 import { Checklists } from './ui/Checklists';
+import { HintsContext } from './ui/Hint';
+import { hintsOn } from './core/hints';
 import { FailureBanner } from './ui/FailureBanner';
 import { TaxonomyProvider, useOnline, useSettings } from './ui/hooks';
 import { Notebook } from './ui/Notebook';
@@ -42,43 +44,45 @@ export function App() {
 
   return (
     <TaxonomyProvider locales={settings.displayLocales}>
-      <div className="app">
-        <header className="topbar">
-          <span className="brand grow">BirdTally</span>
-          {settings.activeTripId && <TripName id={settings.activeTripId} />}
-          <span className={`pill ${online ? 'online' : 'offline'}`} role="status">
-            <span className="dot" aria-hidden />
-            {online ? 'Online' : 'Offline — saving on device'}
-          </span>
-        </header>
-        <FailureBanner />
-        {needRefresh && (
-          <div className="banner info" style={{ margin: '10px 16px 0' }}>
-            <span className="grow">A new version of BirdTally is ready.</span>
-            <button className="btn small" onClick={() => updateServiceWorker(true)}>Update</button>
-          </div>
-        )}
-        <main>
-          {tab === 'today' && <Today go={(t) => setTab(t as Tab)} />}
-          {tab === 'notebook' && <Notebook />}
-          {tab === 'checklists' && <Checklists />}
-          {tab === 'setup' && <Setup />}
-        </main>
-        <nav className="tabs" aria-label="Main">
-          {TABS.map((t) => {
-            const n = t.id === 'notebook' ? pending : t.id === 'checklists' ? toReview : 0;
-            return (
-              <button key={t.id} aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
-                <span className={`ico ${n ? 'badge' : ''}`} data-n={n || undefined} aria-hidden>
-                  {t.ico}
-                </span>
-                {t.label}
-                {n ? <span className="visually-hidden"> ({n})</span> : null}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
+      <HintsContext.Provider value={hintsOn(settings)}>
+        <div className="app">
+          <header className="topbar">
+            <span className="brand grow">BirdTally</span>
+            {settings.activeTripId && <TripName id={settings.activeTripId} />}
+            <span className={`pill ${online ? 'online' : 'offline'}`} role="status">
+              <span className="dot" aria-hidden />
+              {online ? 'Online' : 'Offline — saving on device'}
+            </span>
+          </header>
+          <FailureBanner />
+          {needRefresh && (
+            <div className="banner info" style={{ margin: '10px 16px 0' }}>
+              <span className="grow">A new version of BirdTally is ready.</span>
+              <button className="btn small" onClick={() => updateServiceWorker(true)}>Update</button>
+            </div>
+          )}
+          <main>
+            {tab === 'today' && <Today go={(t) => setTab(t as Tab)} />}
+            {tab === 'notebook' && <Notebook />}
+            {tab === 'checklists' && <Checklists />}
+            {tab === 'setup' && <Setup />}
+          </main>
+          <nav className="tabs" aria-label="Main">
+            {TABS.map((t) => {
+              const n = t.id === 'notebook' ? pending : t.id === 'checklists' ? toReview : 0;
+              return (
+                <button key={t.id} aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
+                  <span className={`ico ${n ? 'badge' : ''}`} data-n={n || undefined} aria-hidden>
+                    {t.ico}
+                  </span>
+                  {t.label}
+                  {n ? <span className="visually-hidden"> ({n})</span> : null}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </HintsContext.Provider>
     </TaxonomyProvider>
   );
 }
