@@ -12,10 +12,12 @@ import {
   updateSettings,
   type ImportSummary
 } from '../store';
+import { addRegionCode } from '../core/region';
 import { useOnline, useSettings, useTaxonomy } from './hooks';
 import { Conflicts } from './Conflicts';
 import { DraftField } from './DraftField';
 import { RegionKeyGuide } from './RegionKeyGuide';
+import { RegionPicker } from './RegionPicker';
 import { Check } from './SetupControls';
 import { pickFile, saveFile, sha256, stamp } from './util';
 
@@ -160,6 +162,7 @@ export function Setup() {
             </select>
           </label>
         )}
+        <RegionPicker onAdd={(code) => setTripCountries(addRegionCode(tripCountries, code))} />
         <div className="row wrap">
           <input className="text" style={{ flex: '1 1 100%' }} aria-label="New trip name" placeholder="New trip name, e.g. Borneo 2027" value={tripName} onChange={(e) => setTripName(e.target.value)} />
           <input className="text grow" aria-label="Trip region codes" placeholder="Regions: NZ-AUK,NZ-WKO" value={tripCountries} onChange={(e) => setTripCountries(e.target.value)} />

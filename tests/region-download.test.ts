@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../src/db';
 import { missingRegions } from '../src/core/region';
-import { createTrip, downloadRegionList, getSettings, updateSettings } from '../src/store';
+import { createTrip, downloadRegionList, getSettings, listRegions, updateSettings } from '../src/store';
 
 const reply = (status: number, body: unknown = []) => vi.fn().mockImplementation(async () => new Response(JSON.stringify(body), { status }));
 const BOX = { minX: 174.3, maxX: 175.4, minY: -37.3, maxY: -36.1 };
@@ -83,5 +83,29 @@ describe('region bounding boxes for the GPS cross-check', () => {
     const saved = (await db.tripLists.get('NZ-AUK'))!;
     expect(saved.codes).toEqual(['tui1']);
     expect(saved.bounds).toBeUndefined();
+  });
+});
+
+describe('listRegions', () => {
+  it('lists sub-regions by name, sending the key only to api.ebird.org', async () => {
+    const f = reply(200, [{ code: 'NZ-WKO', name: 'Waikato' }, { code: 'NZ-AUK', name: 'Auckland' }, { code: 7 }, 'junk']);
+    vi.stubGlobal('fetch', f);
+    expect(await listRegions('subnational1', 'NZ', 'KEY123')).toEqual([{ code: 'NZ-AUK', name: 'Auckland' }, { code: 'NZ-WKO', name: 'Waikato' }]);
+    expect(String(f.mock.calls[0][0])).toBe('https://api.ebird.org/v2/ref/region/list/subnational1/NZ');
+    expect(f.mock.calls[0][1]).toEqual({ headers: { 'x-ebirdapitoken': 'KEY123' } });
+  });
+
+  it('asks for the countries with the parent "world"', async () => {
+    const f = reply(200, []);
+    vi.stubGlobal('fetch', f);
+    expect(await listRegions('country', 'world', 'k')).toEqual([]);
+    expect(String(f.mock.calls[0][0])).toBe('https://api.ebird.org/v2/ref/region/list/country/world');
+  });
+
+  it('says what to do when the key is refused, and copes with an odd reply', async () => {
+    vi.stubGlobal('fetch', reply(403));
+    await expect(listRegions('country', 'world', 'bad')).rejects.toThrow(/refused the key/);
+    vi.stubGlobal('fetch', reply(200, { not: 'a list' }));
+    expect(await listRegions('country', 'world', 'k')).toEqual([]);
   });
 });

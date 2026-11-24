@@ -34,10 +34,27 @@ export async function downloadTaxonomy(locales: string[], onProgress: (msg: stri
   onProgress(`Saved ${taxa.length.toLocaleString()} taxa (version ${version}).`);
 }
 
+const KEY_REFUSED = 'eBird refused the key. Check that you copied all of it and that it is your own.';
+
+export interface RegionOption {
+  code: string;
+  name: string;
+}
+
+/** Sub-regions of `parent` ('world' lists the countries), for choosing a trip region. Needs the user's own eBird key. */
+export async function listRegions(type: 'country' | 'subnational1', parent: string, apiKey: string): Promise<RegionOption[]> {
+  const r = await fetch(`${API}/ref/region/list/${type}/${encodeURIComponent(parent)}`, { headers: { 'x-ebirdapitoken': apiKey } });
+  if (r.status === 403) throw new Error(KEY_REFUSED);
+  if (!r.ok) throw new Error(`eBird returned ${r.status}`);
+  const rows: unknown = await r.json();
+  const ok = (x: unknown): x is RegionOption => typeof (x as RegionOption)?.code === 'string' && typeof (x as RegionOption)?.name === 'string';
+  return (Array.isArray(rows) ? rows.filter(ok) : []).sort((a, b) => a.name.localeCompare(b.name));
+}
+
 /** Optional: likely species for a region. Needs the user's own eBird API key. */
 export async function downloadRegionList(region: string, apiKey: string) {
   const r = await fetch(`${API}/product/spplist/${encodeURIComponent(region)}`, { headers: { 'x-ebirdapitoken': apiKey } });
-  if (r.status === 403) throw new Error('eBird refused the key. Check that you copied all of it and that it is your own.');
+  if (r.status === 403) throw new Error(KEY_REFUSED);
   if (r.status === 400 || r.status === 404) throw new Error(`eBird does not recognise the region code ${region}. Use a code like NZ or NZ-AUK.`);
   if (!r.ok) throw new Error(`eBird returned ${r.status}`);
   const codes: string[] = await r.json();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateChecklist } from '../src/core/checklist';
-import { insideBounds, isUnusual, missingRegions, outsideRegions, regionSpecies, regionsToFetch } from '../src/core/region';
+import { addRegionCode, insideBounds, isUnusual, missingRegions, outsideRegions, regionSpecies, regionsToFetch } from '../src/core/region';
 import type { Outing, Sighting, Taxon } from '../src/core/types';
 import { validateFile } from '../src/core/validate';
 
@@ -96,4 +96,11 @@ describe('GPS cross-check geometry', () => {
     const records = [{ key: 'NZ-AUK', bounds: auckland }, { key: 'NZ-WKO' }, { key: 'NZ-OTA', bounds: null }];
     expect(regionsToFetch(['NZ-AUK', 'NZ-WKO', 'NZ-OTA', 'NZ-NSN'], records)).toEqual(['NZ-WKO', 'NZ-NSN']);
   });
+});
+
+describe('addRegionCode', () => {
+  it('appends in upper case', () => expect(addRegionCode('NZ', 'nz-auk')).toBe('NZ,NZ-AUK'));
+  it('starts a list', () => expect(addRegionCode('', 'NZ')).toBe('NZ'));
+  it('does not repeat a code, and tidies what was typed', () => expect(addRegionCode('nz , nz-auk', 'NZ-AUK')).toBe('NZ,NZ-AUK'));
+  it('ignores an empty code', () => expect(addRegionCode('NZ', ' ')).toBe('NZ'));
 });

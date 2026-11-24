@@ -49,3 +49,10 @@ export function regionsToFetch(regions: string[], records: { key: string; bounds
   const byKey = new Map(records.map((r) => [r.key, r]));
   return regions.filter((r) => !byKey.has(r) || byKey.get(r)!.bounds === undefined);
 }
+
+/** Add a region code to the typed list ("NZ, NZ-AUK"), upper-cased and without repeats. */
+export function addRegionCode(text: string, code: string): string {
+  const codes = text.split(/[ ,]+/).map((c) => c.trim().toUpperCase()).filter(Boolean);
+  const add = code.trim().toUpperCase();
+  return (add && !codes.includes(add) ? [...codes, add] : codes).join(',');
+}
