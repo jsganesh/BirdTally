@@ -1,24 +1,25 @@
-import { useMemo, useRef, useState } from 'react';
-import { isAmbiguous, searchTaxa } from '../core/taxonomy';
+import { useRef, useState } from 'react';
+import { isAmbiguous } from '../core/taxonomy';
 import { useTaxonomy, useSettings } from './hooks';
 import { displayNames } from '../core/taxonomy';
 import { useRegion } from './useRegion';
+import { foldedLabel, useSpeciesSearch } from './useSpeciesSearch';
 
 /**
  * The always-visible "add a bird" field. Tap → type 2–3 letters → tap a result = saved.
  * Enter saves the top result, so a keyboard user can add a bird without touching the list.
  */
 export function AddBar({ recent, regional, onPick }: { recent: string[]; regional?: string[]; onPick: (code: string) => void }) {
-  const { index, info } = useTaxonomy();
+  const { info } = useTaxonomy();
   const settings = useSettings();
   const region = useRegion();
   const [q, setQ] = useState('');
   const [sel, setSel] = useState(0);
   const [chose, setChose] = useState(false); // used the arrow keys: Enter then means that row
   const inputRef = useRef<HTMLInputElement>(null);
-  const hits = useMemo(() => (q.trim() ? searchTaxa(index, q, { recent, regional, limit: 12 }) : []), [q, index, recent, regional]);
+  const { hits, main, hidden, showFolded } = useSpeciesSearch(q, 12, { recent, regional });
   const locales = settings?.displayLocales ?? ['en'];
-  const unsure = isAmbiguous(hits) && !chose;
+  const unsure = isAmbiguous(main) && !chose;
 
   const pick = (code: string) => {
     onPick(code);
@@ -61,6 +62,11 @@ export function AddBar({ recent, regional, onPick }: { recent: string[]; regiona
                 </button>
               );
             })}
+            {hidden > 0 && (
+              <button className="result" onClick={showFolded}>
+                <span className="meta">{foldedLabel(hidden)}</span>
+              </button>
+            )}
           </div>
         )}
         <input

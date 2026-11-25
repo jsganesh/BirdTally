@@ -1,6 +1,7 @@
 import { clearable, stripSighting } from '../core/clearing';
 import { currentOffsetMin, currentZone } from '../core/geotime';
 import { newMeta, touch } from '../core/records';
+import { toggled, type Tag } from '../core/tags';
 import type { CountMode, Detection, ID, MediaMeta, Sighting } from '../core/types';
 import { db } from '../db';
 import { bumpOutingTx } from './outings';
@@ -67,6 +68,17 @@ export async function updateSighting(id: ID, changes: Partial<Sighting>) {
     await db.sightings.put(touch(cur, next, deviceId));
     if (cur.outingId) await bumpOutingTx(cur.outingId, deviceId);
     if (changes.outingId && changes.outingId !== cur.outingId) await bumpOutingTx(changes.outingId, deviceId);
+  });
+}
+
+/** Switch one notebook tag on or off. Read and write in one transaction, so two quick taps both count. */
+export async function toggleTag(id: ID, tag: Tag) {
+  const { deviceId } = await getSettings();
+  await db.transaction('rw', db.sightings, db.outings, async () => {
+    const cur = await db.sightings.get(id);
+    if (!cur) return;
+    await db.sightings.put(touch(cur, { tags: toggled(cur.tags, tag) }, deviceId));
+    if (cur.outingId) await bumpOutingTx(cur.outingId, deviceId);
   });
 }
 

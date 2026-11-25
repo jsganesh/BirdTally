@@ -68,6 +68,8 @@ const SIGHTING: Spec = {
   merlinSuggestion: optional(str),
   possibleCaptive: optional(bool),
   unusualHere: optional(bool),
+  // Any short words, so a tag added by a newer version does not make the file fail to import.
+  tags: optional((v) => Array.isArray(v) && v.length <= 30 && v.every((t) => typeof t === 'string' && t.length > 0 && t.length <= 30)),
   cleared: optional(bool),
   mediaIds: listOf(id),
   idHistory: listOf(shape({ at: iso, speciesCode: optional(str), source: oneOf('me', 'merlin-noted'), note: optional(str) }))

@@ -16,7 +16,10 @@
 |---|---|
 | Record real effort | **Turn on** Birding mode when you start birding, **Turn off** when you stop |
 | Add a bird you've used recently | its button under **Recent birds** (1 tap) |
-| Add any bird | the bottom field, type 2–3 letters (`tui`, `kea`, `nz fan`), then tap the match. Press Enter only when one bird clearly matches; if several birds match equally (a short code like `BASW` or `NZFA` is shared by several species), Enter does nothing and you tap the one you saw |
+| Add any bird | the bottom field, type 2–3 letters (`tui`, `kea`, `nz fan`), then tap the match. Press Enter only when one bird clearly matches; if several birds match equally (a short code like `BASW` or `NZFA` is shared by several species), Enter does nothing and you tap the one you saw. Hybrids, "X/Y", "sp." and domestic types sit behind **Show N hybrids…** at the end of the list; type `x`, `/`, `sp`, `hybrid` or `domestic` to see them straight away |
+| Name the place, as at the top of a paper list | the place field at the top of Today (while Birding mode is on) |
+| Mark photos, video, sound, sex, age, breeding, a lifer or an ID to check | the marks on the confirmation bar (**P V PV A ★ ?**), or all ten in the entry's sheet |
+| Get the day as a notebook page | **Day sheet** on Today, or next to any day in the Notebook, then **Copy** or **Share** |
 | Record a call to identify later | **Voice note**, then tap it again to stop |
 | Record a phone photo to identify later | **Photo** |
 | Note a bird you couldn't identify | **Unknown bird**, then add a note |
@@ -33,6 +36,12 @@ Deleting a checklist asks what happens to its birds. By default they stay in the
 Deleted birds stay in **Notebook → Deleted** so you can restore them, and so a delete reaches your other phone. They never go to eBird, but their photos and voice notes still take space. **Clear all deleted…** (or **Clear those over 30 days old…**) removes their species, notes, GPS positions, photos and voice notes for good; it tells you how many entries and how much space first, and it cannot be undone. Only a blank "deleted" mark is kept, so an older backup or your other phone cannot bring the bird back. Backup files you saved earlier still hold the original details. After you confirm a checklist as submitted, the checklist reminds you if there are deleted entries to clear. Nothing is ever cleared automatically.
 
 Short grey hint lines sit under buttons whose meaning is not obvious (Voice note, Mark identification pending, Split, Needs correction and so on). Once you know the app, turn them off under **Setup → Preferences → Show hints under buttons that need explaining**.
+
+The top of Today shows the date and the GPS state of your latest entry, so you can see the time and position are being saved without writing them down.
+
+Marks work like a paper notebook: **P** camera photos, **V** camera video, **PV** phone video, **A** sound recorded, **♂ ♀ juv** sex and age, **B** breeding behaviour or nest, **★** lifer, **?** check the ID from your photos later. They show after the name in your lists and on the day sheet. P, V, PV, A, ♂, ♀, juv and B go to eBird as words in the species comment ("Photographed. Male."); you still upload the media on eBird yourself. ★ and ? never leave the phone, and review reminds you about entries still marked ?. BirdTally cannot tell a lifer by itself yet: it needs your eBird history, planned for release 2.
+
+The **Day sheet** lists every entry of the day, repeats included, one line each: time, name, count, marks and note. Use it to match camera files to birds when you cull photos.
 
 Every entry is saved immediately, with its time and one GPS position. The count starts as **present (X)**; switch it to **About** or **Exactly** only if you want a number.
 

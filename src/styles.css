@@ -326,3 +326,12 @@ audio { width: 100%; }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Notebook marks (P, V, PV, ★ …) */
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { min-width: var(--tap); min-height: var(--tap); padding: 0 10px; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); font-weight: 800; font-size: 1rem; }
+.tag[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.toast .tags { gap: 6px; }
+.toast .tag { min-width: 44px; min-height: 44px; border-color: transparent; }
+.marks { margin-left: 6px; font-weight: 800; color: var(--accent); }
+.daysheet { margin: 0; white-space: pre-wrap; font: 0.95rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }

@@ -1,16 +1,17 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useMemo, useState } from 'react';
-import { searchTaxa } from '../core/taxonomy';
+import { useEffect, useState } from 'react';
 import type { CountMode, Detection, Sighting } from '../core/types';
 import { db } from '../db';
 import { addMedia, deleteSighting, restoreSighting, updateSighting } from '../store';
 import { Dialog } from './Dialog';
 import { Hint } from './Hint';
+import { TagRow } from './TagRow';
 import { DraftField } from './DraftField';
-import { useNames, useTaxonomy } from './hooks';
+import { useNames } from './hooks';
 import { VoiceRecorder } from './recorder';
 import { UnusualSheet } from './UnusualSheet';
 import { useRegion } from './useRegion';
+import { foldedLabel, useSpeciesSearch } from './useSpeciesSearch';
 import { useVoiceNote } from './useVoiceNote';
 import { capturePhoto, dayLabel, timeOf } from './util';
 
@@ -30,7 +31,6 @@ function MediaView({ id }: { id: string }) {
 export function SightingSheet({ id, onClose }: { id: string; onClose: () => void }) {
   const s = useLiveQuery(() => db.sightings.get(id), [id]);
   const names = useNames();
-  const { index } = useTaxonomy();
   const [changing, setChanging] = useState(false);
   const [q, setQ] = useState('');
   const [asking, setAsking] = useState<string>();
@@ -38,7 +38,7 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
   const voice = useVoiceNote(async (blob, seconds) => {
     await addMedia(id, blob, 'audio', seconds);
   });
-  const hits = useMemo(() => (q.trim() ? searchTaxa(index, q, { limit: 8 }) : []), [q, index]);
+  const { hits, hidden, showFolded } = useSpeciesSearch(q, 8);
 
   if (!s) return null;
   const set = (c: Partial<Sighting>) => updateSighting(s.id, c);
@@ -107,6 +107,11 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
                   </span>
                 </button>
               ))}
+              {hidden > 0 && (
+                <button className="item" onClick={showFolded}>
+                  <span className="sub">{foldedLabel(hidden)}</span>
+                </button>
+              )}
             </div>
           )}
           {changing && <button className="btn small" onClick={() => setChanging(false)}>Cancel</button>}
@@ -120,6 +125,11 @@ export function SightingSheet({ id, onClose }: { id: string; onClose: () => void
           <Hint>Mark identification pending takes the species off this entry until you decide. It will be left out of checklists until then.</Hint>
         </div>
       )}
+
+      <div className="stack">
+        <TagRow id={s.id} tags={s.tags} />
+        <Hint>Marks as in a paper notebook. P camera photo, V camera video, PV phone video, A sound, B breeding. They go to eBird as the species comment; ★ lifer and ? check ID stay private.</Hint>
+      </div>
 
       <div className="stack">
         <div className="seg" role="group" aria-label="Count">

@@ -9,8 +9,9 @@ An offline field notebook for bird photographers. You log birds in a few taps wi
 | Works now | Not yet |
 |---|---|
 | Downloading the eBird taxonomy in several name languages (English, te reo Māori, …) for offline search | Mac photo import from Sony ARW files (release 2) |
-| Adding a bird in ≤ 3 taps: tap a recent species, or type a name or code and tap the match | Importing eBird's "Download My Data" history into the archive (release 2) |
-| One GPS fix per entry, with no continuous tracking | Native iPhone build through TestFlight (next step) |
+| Adding a bird in ≤ 3 taps: tap a recent species, or type a name or code and tap the match; hybrids, "X/Y" and domestic types folded away unless asked for | Importing eBird's "Download My Data" history into the archive (release 2) |
+| One GPS fix per entry, with no continuous tracking; date, place and GPS state shown at the top of Today |
+| Notebook marks on each entry (P, V, PV, A, ♂, ♀, juv, B, ★ lifer, ? check ID), sent to eBird as species-comment words except ★ and ?; a plain-text day sheet to copy or share | Automatic lifers from your eBird history (release 2) | Native iPhone build through TestFlight (next step) |
 | Voice notes, phone photos, "Unknown bird" entries waiting for an ID | App lock: none for now. Add a Face ID / fingerprint lock later only if users ask for it (no PIN) |
 | Turning Birding mode on and off to record real effort, or having birding sessions suggested afterwards (split on a new date, a gap over 90 min, or a move over 2 km) | |
 | Checklist review: protocol, the completeness question, count overrides, split and merge, validation | |

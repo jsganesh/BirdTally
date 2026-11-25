@@ -1,22 +1,21 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useState } from 'react';
 import { localDateKey, currentOffsetMin } from '../core/geotime';
+import { tagMarks } from '../core/tags';
 import { db } from '../db';
 import { addMedia, addSighting, deleteSighting, startOuting, stopOuting } from '../store';
 import { AddBar } from './AddBar';
+import { DaySheet } from './DaySheet';
 import { useNames, useSettings, useTaxonomy } from './hooks';
 import { Hint } from './Hint';
 import { RegionNotice } from './RegionNotice';
 import { UnusualSheet } from './UnusualSheet';
 import { useRegion } from './useRegion';
+import { SavedToast, type ToastState } from './SavedToast';
 import { SightingSheet } from './SightingSheet';
-import { capturePhoto, timeOf } from './util';
+import { TodayHeader } from './TodayHeader';
+import { capturePhoto, dayLabel, timeOf } from './util';
 import { useVoiceNote } from './useVoiceNote';
-
-interface ToastState {
-  id: string;
-  text: string;
-}
 
 export function Today({ go }: { go: (tab: string) => void }) {
   const settings = useSettings();
@@ -25,6 +24,7 @@ export function Today({ go }: { go: (tab: string) => void }) {
   const [toast, setToast] = useState<ToastState>();
   const [open, setOpen] = useState<string>();
   const [asking, setAsking] = useState<string>();
+  const [sheet, setSheet] = useState(false);
   const region = useRegion();
 
   const activeOuting = useLiveQuery(() => (settings?.activeOutingId ? db.outings.get(settings.activeOutingId) : undefined), [settings?.activeOutingId]);
@@ -104,6 +104,8 @@ export function Today({ go }: { go: (tab: string) => void }) {
         </button>
       )}
 
+      <TodayHeader outing={activeOuting} newest={todays[0]} />
+
       {lastFix && (
         <RegionNotice position={lastFix.position} what={`Your last GPS fix (${names.name(lastFix.speciesCode)}, ${timeOf(lastFix.observedAt, lastFix.utcOffsetMin)})`} onSetup={() => go('setup')} />
       )}
@@ -175,6 +177,11 @@ export function Today({ go }: { go: (tab: string) => void }) {
               {pendingCount} to identify
             </button>
           )}
+          {todays.length > 0 && (
+            <button className="btn small" onClick={() => setSheet(true)}>
+              Day sheet
+            </button>
+          )}
         </div>
         {todays.length === 0 ? (
           <div className="empty card">Nothing recorded today. Type a name below to add your first bird.</div>
@@ -184,7 +191,10 @@ export function Today({ go }: { go: (tab: string) => void }) {
               <button key={s.id} className={`item ${s.speciesCode ? '' : 'pending'}`} onClick={() => setOpen(s.id)}>
                 <span className="time">{timeOf(s.observedAt, s.utcOffsetMin)}</span>
                 <span className="grow">
-                  <span className="title">{names.name(s.speciesCode)}</span>
+                  <span className="title">
+                    {names.name(s.speciesCode)}
+                    {s.tags?.length ? <span className="marks">{tagMarks(s.tags)}</span> : null}
+                  </span>
                   <span className="sub" style={{ display: 'block' }}>
                     {[
                       s.countMode === 'present' ? 'X' : `${s.countMode === 'estimate' ? '~' : ''}${s.count}`,
@@ -206,27 +216,21 @@ export function Today({ go }: { go: (tab: string) => void }) {
       <AddBar recent={recent} regional={tripList} onPick={add} />
 
       {toast && (
-        <div className="toast" role="status">
-          <span className="grow">{toast.text}</span>
-          <button
-            onClick={async () => {
-              await deleteSighting(toast.id);
-              setToast({ id: toast.id, text: 'Removed' });
-              setTimeout(() => setToast(undefined), 1500);
-            }}
-          >
-            Undo
-          </button>
-          <button
-            onClick={() => {
-              setOpen(toast.id);
-              setToast(undefined);
-            }}
-          >
-            Details
-          </button>
-        </div>
+        <SavedToast
+          toast={toast}
+          onUndo={async () => {
+            await deleteSighting(toast.id);
+            setToast({ id: toast.id, text: 'Removed', removed: true });
+            setTimeout(() => setToast(undefined), 1500);
+          }}
+          onDetails={() => {
+            setOpen(toast.id);
+            setToast(undefined);
+          }}
+          onKeep={() => setToast({ ...toast })}
+        />
       )}
+      {sheet && <DaySheet dayKey={todayKey} title={dayLabel(new Date().toISOString(), currentOffsetMin())} onClose={() => setSheet(false)} />}
       {open && <SightingSheet id={open} onClose={() => setOpen(undefined)} />}
       {asking && (
         <UnusualSheet

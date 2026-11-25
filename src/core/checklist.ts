@@ -1,4 +1,5 @@
 import { KM_PER_MILE, localDateKey, spanKm } from './geotime';
+import { EVIDENCE_TAGS, tagComments } from './tags';
 import type { GeoPoint, Outing, Sighting, Taxon } from './types';
 
 export interface ChecklistLine {
@@ -56,6 +57,7 @@ export function buildLines(outing: Outing, sightings: Sighting[], taxa: Map<stri
     for (const s of list) if (s.note) notes.push(s.note);
     if (list.some((s) => s.countMode === 'estimate') && typeof count === 'number' && countBasis !== 'your override')
       notes.push('Count estimated.');
+    notes.push(...tagComments(list));
     lines.push({ speciesCode: code, taxon: taxa.get(code), sightingIds: list.map((s) => s.id), count, countBasis, comments: notes.join(' ') });
   }
   lines.sort((a, b) => (a.taxon?.order ?? 1e9) - (b.taxon?.order ?? 1e9));
@@ -81,7 +83,7 @@ function unusualWithoutEvidence(lines: ChecklistLine[], mine: Sighting[]): strin
   return lines
     .filter((l) => {
       const own = mine.filter((s) => s.speciesCode === l.speciesCode);
-      return own.some((s) => s.unusualHere) && !own.some((s) => s.note || s.mediaIds.length);
+      return own.some((s) => s.unusualHere) && !own.some((s) => s.note || s.mediaIds.length || s.tags?.some((t) => EVIDENCE_TAGS.includes(t)));
     })
     .map((l) => l.taxon?.en ?? l.speciesCode);
 }
@@ -118,6 +120,8 @@ export function validateChecklist(outing: Outing, sightings: Sighting[], taxa: M
   }
   for (const name of unusualWithoutEvidence(lines, mine))
     warn(`${name} was recorded as unusual here. eBird reviewers usually ask for a description or photo: add a description to the entry's note (it goes to eBird as the species comment).`);
+  const toCheck = mine.filter((s) => s.tags?.includes('checkId')).length;
+  if (toCheck) warn(`${toCheck} entr${toCheck === 1 ? 'y is' : 'ies are'} marked Check ID. Confirm ${toCheck === 1 ? 'it' : 'them'} from your photos before you export.`);
   if (mine.some((s) => s.possibleCaptive)) warn('Some entries are marked as possibly captive or escaped. eBird asks you not to report captive birds.');
   if (mine.some((s) => s.tz !== outing.tz)) warn('Time zone changed during this birding session. Check the date and start time.');
 

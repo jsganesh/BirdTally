@@ -150,6 +150,15 @@ export interface SearchHit {
 const CATEGORY_BONUS: Record<string, number> = { species: 6, issf: 2, form: 1 };
 /** Categories whose code lists include their parents' codes (e.g. a hybrid lists both). */
 const COMPOSITE = new Set(['hybrid', 'slash', 'intergrade', 'spuh']);
+/** Shown only on request, so a common species is not buried under its hybrids and "X/Y" entries. */
+const FOLDED = new Set([...COMPOSITE, 'domestic']);
+/** Query words that ask for folded entries. */
+const FOLD_WORDS = new Set(['x', 'sp', 'hybrid', 'domestic']);
+const CODE_SCORE = 85;
+/** A code that is also a word in bird names ("MYNA", Paperbark Flycatcher) ranks below those names. */
+const CODE_AS_WORD_SCORE = 60;
+
+const hasWord = (e: SearchIndexEntry, word: string) => e.names.some((n) => ` ${n} `.includes(` ${word} `));
 
 function nameScore(n: string, q: string, tokens: string[]): number {
   if (n === q) return 90;
@@ -179,12 +188,14 @@ export function searchTaxa(
   const tokens = q.split(' ');
   const recent = new Set(opts.recent ?? []);
   const regional = new Set(opts.regional ?? []);
+  const codeHit = index.some((e) => e.codes.includes(qCode));
+  const codeScore = codeHit && index.some((e) => hasWord(e, q)) ? CODE_AS_WORD_SCORE : CODE_SCORE;
   const hits: SearchHit[] = [];
   for (const e of index) {
     let score = 0;
     let matched = '';
     if (e.codes.includes(qCode)) {
-      score = COMPOSITE.has(e.taxon.category) ? 50 : 85;
+      score = COMPOSITE.has(e.taxon.category) ? 50 : codeScore;
       matched = qCode;
     }
     for (const n of [...e.names, e.sciNorm]) {
@@ -220,6 +231,17 @@ export function searchTaxa(
  */
 export function isAmbiguous(hits: SearchHit[]): boolean {
   return hits.length > 1 && hits[0].score === hits[1].score;
+}
+
+/**
+ * Hybrids, slashes, spuhs, intergrades and domestic types go behind a "show more" row, unless the query asks for them
+ * ("x", "/", "sp", "hybrid", "domestic") or nothing else matches.
+ */
+export function splitFolded(hits: SearchHit[], query: string): { main: SearchHit[]; folded: SearchHit[] } {
+  const asked = query.includes('/') || normalize(query).split(' ').some((w) => FOLD_WORDS.has(w));
+  const main = hits.filter((h) => !FOLDED.has(h.taxon.category));
+  if (asked || main.length === 0) return { main: hits, folded: [] };
+  return { main, folded: hits.filter((h) => FOLDED.has(h.taxon.category)) };
 }
 
 /** Display name: English plus the first name in each extra display locale. */

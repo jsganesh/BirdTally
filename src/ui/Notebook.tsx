@@ -7,7 +7,9 @@ import { db } from '../db';
 import { restoreSighting } from '../store';
 import { DeletedCleaner } from './DeletedCleaner';
 import { useNames, useTaxonomy } from './hooks';
+import { DaySheet } from './DaySheet';
 import { SightingSheet } from './SightingSheet';
+import { tagMarks } from '../core/tags';
 import { dayLabel, timeOf } from './util';
 
 type Filter = 'all' | 'pending' | 'deleted';
@@ -19,6 +21,7 @@ export function Notebook() {
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const [open, setOpen] = useState<string>();
+  const [sheetDay, setSheetDay] = useState<{ key: string; title: string }>();
   const all = useLiveQuery(() => db.sightings.orderBy('observedAt').reverse().toArray(), []);
   const outings = useLiveQuery(() => db.outings.toArray(), []);
   const trips = useLiveQuery(() => db.trips.toArray(), []);
@@ -89,7 +92,10 @@ export function Notebook() {
       {byDay.length === 0 && <div className="empty card">No entries match.</div>}
       {byDay.map(([day, list]) => (
         <section key={day} className="stack">
-          <h3>{dayLabel(list[0].observedAt, list[0].utcOffsetMin)}</h3>
+          <div className="section-title">
+            <h3>{dayLabel(list[0].observedAt, list[0].utcOffsetMin)}</h3>
+            <button className="btn small" onClick={() => setSheetDay({ key: day, title: dayLabel(list[0].observedAt, list[0].utcOffsetMin) })}>Day sheet</button>
+          </div>
           <div className="list">
             {list.map((s) => {
               const o = s.outingId ? outingById.get(s.outingId) : undefined;
@@ -98,7 +104,10 @@ export function Notebook() {
                   <button className={`item ${s.speciesCode ? '' : 'pending'}`} style={{ borderBottom: 0 }} onClick={() => setOpen(s.id)}>
                     <span className="time">{timeOf(s.observedAt, s.utcOffsetMin)}</span>
                     <span className="grow">
-                      <span className="title">{names.name(s.speciesCode)}</span>
+                      <span className="title">
+                    {names.name(s.speciesCode)}
+                    {s.tags?.length ? <span className="marks">{tagMarks(s.tags)}</span> : null}
+                  </span>
                       <span className="sub" style={{ display: 'block' }}>
                         {[
                           names.alt(s.speciesCode),
@@ -124,6 +133,7 @@ export function Notebook() {
         </section>
       ))}
       {open && <SightingSheet id={open} onClose={() => setOpen(undefined)} />}
+      {sheetDay && <DaySheet dayKey={sheetDay.key} title={sheetDay.title} onClose={() => setSheetDay(undefined)} />}
     </div>
   );
 }
